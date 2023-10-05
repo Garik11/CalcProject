@@ -11,8 +11,8 @@ all: obj calc clean
 obj:
 	@mkdir obj
 
-calc: obj/main.o obj/Processor.o obj/Text.o obj/Text_read_file.o obj/Stack.o obj/StackHash.o obj/StackCalibri.o obj/StackArray.o obj/Hash.o obj/recalloc.o
-	@$(CC) $(RFLAGS) obj/main.o obj/Processor.o obj/Text.o obj/Text_read_file.o obj/Stack.o obj/StackHash.o obj/StackCalibri.o obj/StackArray.o obj/Hash.o obj/recalloc.o -o $(PROGRAMNAME)
+calc: obj/main.o obj/Processor.o obj/Assembler.o obj/Text.o obj/Text_read_file.o obj/Stack.o obj/StackHash.o obj/StackCalibri.o obj/StackArray.o obj/Hash.o obj/recalloc.o
+	@$(CC) $(RFLAGS) obj/main.o obj/Processor.o obj/Assembler.o obj/Text.o obj/Text_read_file.o obj/Stack.o obj/StackHash.o obj/StackCalibri.o obj/StackArray.o obj/Hash.o obj/recalloc.o -o $(PROGRAMNAME)
 
 obj/main.o: main.cpp
 	@$(CC) $(LFLAGS) $(RFLAGS) $< -o $@
@@ -20,10 +20,13 @@ obj/main.o: main.cpp
 obj/Processor.o: Processor/Processor.cpp
 	@$(CC) $(LFLAGS) $(RFLAGS) $< -o $@
 
+obj/Assembler.o: Assembler/Assembler.cpp
+	@$(CC) $(LFLAGS) $(RFLAGS) $< -o $@
+
 obj/Text.o: FileWork/Text.cpp
 	@$(CC) $(LFLAGS) $(RFLAGS) $< -o $@
 
-obj/Text_read_file.o: FileWork/Text_read_file.cpp
+obj/Text_read_file.o: FileWork/TextReadFile.cpp
 	@$(CC) $(LFLAGS) $(RFLAGS) $< -o $@
 
 obj/Stack.o: Processor/Stack/src/Stack/Stack.cpp

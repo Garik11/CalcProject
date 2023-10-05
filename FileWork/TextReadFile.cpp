@@ -1,4 +1,4 @@
-#include "Text_read_file.h"
+#include "TextReadFile.h"
 size_t fsize(const char* const FILE_NAME, size_t *FILE_SIZE){
     assert(FILE_SIZE != NULL);
 
@@ -32,7 +32,7 @@ void makePointers(char* buffer, char** text, const size_t BSIZE){
     }
 }
 
-Text* readTextFromFile(const char* const FILE_NAME, enum TextErrors* error){
+Text* readTextFromFile(const char* const FILE_NAME, TextErrors* error){
     assert(error != NULL);
 
     *error = TEXT_ALL_OK;

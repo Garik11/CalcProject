@@ -7,6 +7,7 @@
 
 #include "./Stack/src/Stack/Stack.h"
 #include "./Stack/src/Stack/StackHidden.h"
+#include "../GlobalHeaders/Calc.h"
 
 #define CALC_SET_ERROR(сondition, сondition_name) ((сondition) == 0) ? сondition_name : CALC_ALL_OK
 
@@ -27,6 +28,6 @@ enum ProcessorErrors{
 
 typedef size_t CalcErrorsBitmask;
 
-void calc(char** text, size_t lines, CalcErrorsBitmask *outerror = NULL);
+void calc(const char* FILE_NAME, CalcErrorsBitmask *outerror = NULL);
 
 #endif // !CALC_PROCESSOR_H
