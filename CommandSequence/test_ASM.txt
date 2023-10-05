@@ -1,5 +1,6 @@
 in
 in
+in
 sin
 out
 hlt

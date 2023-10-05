@@ -1,24 +1,26 @@
 #include "Processor.h"
-static void    push    (Stack* stk, double value, CalcErrorsBitmask *outerror = NULL);
-static double  pop     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    add     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    div     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    sub     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    mul     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    sin     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    cos     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    sqrt    (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    out     (Stack* stk, CalcErrorsBitmask *outerror = NULL);
-static void    in      (Stack* stk, CalcErrorsBitmask *outerror = NULL);
 
-void calc(const char* FILE_NAME, CalcErrorsBitmask *outerror){
+static inline void    PUSH    (Stack* stk, double value);
+static inline double  POP     (Stack* stk);
+static inline void    ADD     (Stack* stk);
+static inline void    DIV     (Stack* stk);
+static inline void    SUB     (Stack* stk);
+static inline void    MUL     (Stack* stk);
+static inline void    SIN     (Stack* stk);
+static inline void    COS     (Stack* stk);
+static inline void    SQRT    (Stack* stk);
+static inline void    OUT     (Stack* stk);
+static inline void    IN      (Stack* stk);
+
+
+void calc(const char* FILE_NAME){
+
     FILE *fp = fopen(FILE_NAME, "r");
     assert(fp != NULL);
 
-    CalcErrorsBitmask calcerror     = CALC_ALL_OK ;    
-    StackErrorsBitmask stackerror   = STACK_ALL_OK;
-
+    StackErrorsBitmask stackerror = STACK_ALL_OK;
     Stack* stk = STACK_CTOR(&stackerror);
+    assert(stackerror == STACK_ALL_OK);
 
     int command_code = 0;
 
@@ -27,37 +29,37 @@ void calc(const char* FILE_NAME, CalcErrorsBitmask *outerror){
         switch (command_code){
         case PUSH_C:
             fscanf(fp, "%lg", &value);
-            push(stk, value);
+            PUSH(stk, value);
             break;
         case POP_C:
-            pop(stk);
+            POP(stk);
             break;
         case IN_C:
-            in(stk);
+            IN(stk);
             break;
         case ADD_C:
-            add(stk);
+            ADD(stk);
             break;
         case SUB_C:
-            sub(stk);
+            SUB(stk);
             break;
         case MUL_C:
-            mul(stk);
+            MUL(stk);
             break;
         case DIV_C:
-            div(stk);
+            DIV(stk);
             break;
         case SQRT_C:
-            sqrt(stk);
+            SQRT(stk);
             break;
         case SIN_C:
-            sin(stk);
+            SIN(stk);
             break;
         case COS_C:
-            cos(stk);
+            COS(stk);
             break;
         case OUT_C:
-            out(stk);
+            OUT(stk);
             break;
         case HLT_C:
             break;
@@ -66,239 +68,72 @@ void calc(const char* FILE_NAME, CalcErrorsBitmask *outerror){
             break;
         }
     }
+
     StackDtor(stk);
     fclose(fp);
+
 }
 
-static void push(Stack* stk, double value, CalcErrorsBitmask *outerror){
-
-    StackErrorsBitmask  stackerror  =   STACK_ALL_OK;
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
+static inline void PUSH(Stack* stk, double value){
+    StackErrorsBitmask  stackerror = STACK_ALL_OK;
     StackPush(stk, value, &stackerror);
-
-    calcerror |= CALC_SET_ERROR(stackerror == STACK_ALL_OK, CALC_PUSH_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_PUSH_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+    assert(stackerror == STACK_ALL_OK);
 }
 
-static double pop(Stack* stk, CalcErrorsBitmask *outerror){
-
-    StackErrorsBitmask  stackerror  =   STACK_ALL_OK;
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
+static inline double POP(Stack* stk){
+    StackErrorsBitmask  stackerror = STACK_ALL_OK;
     double outnum = StackPop(stk, &stackerror);
-
-    calcerror |= CALC_SET_ERROR(stackerror == STACK_ALL_OK, CALC_POP_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_POP_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
+    assert(stackerror == STACK_ALL_OK);
     return outnum;
 }
 
-static void add(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double first_value  = pop(stk, &calcerror);
-    double second_value = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_ADD_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_ADD_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
-    push(stk, first_value + second_value, &calcerror);
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void ADD(Stack* stk){
+    double first_value  = POP(stk);
+    double second_value = POP(stk);
+    PUSH(stk, first_value + second_value);
 }
 
 
-static void div(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double first_value  = pop(stk, &calcerror);
-    double second_value = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_DIV_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_DIV_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
-    push(stk, second_value / first_value, &calcerror);
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void DIV(Stack* stk){
+    double first_value  = POP(stk);
+    double second_value = POP(stk);
+    PUSH(stk, second_value / first_value);
 }
 
-static void sub(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double first_value  = pop(stk, &calcerror);
-    double second_value = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SUB_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_SUB_ERROR));
-    )
-
-    push(stk, second_value - first_value, &calcerror);
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void SUB(Stack* stk){
+    double first_value  = POP(stk);
+    double second_value = POP(stk);
+    PUSH(stk, second_value - first_value);
 }
 
-static void mul(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double first_value  = pop(stk, &calcerror);
-    double second_value = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_MUL_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_MUL_ERROR));
-    )
-
-    push(stk, second_value * first_value, &calcerror);
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void MUL(Stack* stk){
+    double first_value  = POP(stk);
+    double second_value = POP(stk);
+    PUSH(stk, second_value * first_value);
 }
 
-static void sin(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double value  = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SIN_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_SIN_ERROR));
-    )
-
-    push(stk, sin(value), &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SIN_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_SIN_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void SIN(Stack* stk){
+    PUSH(stk, sin(POP(stk)));
 }
 
-static void cos(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double value  = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_COS_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_COS_ERROR));
-    )
-
-    push(stk, cos(value), &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_COS_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_COS_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
+static inline void COS(Stack* stk){
+    PUSH(stk, cos(POP(stk)));
 }
 
-static void sqrt(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double value  = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SQRT_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_SQRT_ERROR));
-    )
-
-    push(stk, sqrt(value), &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SQRT_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_SQRT_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
+static inline void SQRT(Stack* stk){
+    PUSH(stk, sqrt(POP(stk)));
 }
 
-static void out(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double value  = pop(stk, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_OUT_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_OUT_ERROR));
-    )
-
-    push(stk, value, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_OUT_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_OUT_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
+static inline void OUT(Stack* stk){
+    double value  = POP(stk);
+    PUSH(stk, value);
     printf("Your value : %lf\n", value);
 
 }
 
-static void in(Stack* stk, CalcErrorsBitmask *outerror){
-    CalcErrorsBitmask   calcerror   =   CALC_ALL_OK ;
-
-    double value = 0;
-
+static inline void IN(Stack* stk){
+    double value = {};
     printf("Enter value:\n");
-    #warning badscanf
-    scanf("%lg", &value);
-
-    push(stk, value, &calcerror);
-
-    calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_IN_ERROR);
-
-    ON_DEBUG(
-        assert(!(calcerror & CALC_IN_ERROR));
-    )
-
-    if(outerror != NULL)
-        *outerror |= calcerror;
-
+    assert(scanf("%lg", &value) == 1);
+    PUSH(stk, value);
 }
