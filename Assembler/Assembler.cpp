@@ -7,14 +7,17 @@ void compile(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         FILE* inputfile  = fopen(FILE_NAME_INPUT,  "r");
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w");
 
+        assert(inputfile  != NULL);
+        assert(outputfile != NULL);
+
         static const size_t MAX_FUNC_NAME_SIZE = 10;
         static char asmfunc[MAX_FUNC_NAME_SIZE] = {};
 
         while(fscanf(inputfile, "%s", asmfunc) != EOF){
             if(strncmp(asmfunc, PUSH_S, PUSH_N) == 0){
                 double value = 0;
-                fscanf (inputfile, "%lf", &value);
-                fprintf(outputfile,"%d %lf\n",  PUSH_C, value);
+                fscanf (inputfile, "%lg", &value);
+                fprintf(outputfile,"%d %lg\n",  PUSH_C, value);
             }
             else if(strncmp(asmfunc, IN_S, IN_N) == 0){
                 fprintf(outputfile,"%d\n",  IN_C);

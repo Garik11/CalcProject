@@ -26,7 +26,7 @@ void calc(const char* FILE_NAME, CalcErrorsBitmask *outerror){
         double value = 0;
         switch (command_code){
         case PUSH_C:
-            fscanf(fp, "%lf", &value);
+            fscanf(fp, "%lg", &value);
             push(stk, value);
             break;
         case POP_C:
@@ -196,8 +196,6 @@ static void sin(Stack* stk, CalcErrorsBitmask *outerror){
         assert(!(calcerror & CALC_SIN_ERROR));
     )
 
-    printf("sin(%lf) = %lf\n", value, sin(value));
-
     push(stk, sin(value), &calcerror);
 
     calcerror |= CALC_SET_ERROR(calcerror == CALC_ALL_OK, CALC_SIN_ERROR);
@@ -290,7 +288,7 @@ static void in(Stack* stk, CalcErrorsBitmask *outerror){
 
     printf("Enter value:\n");
     #warning badscanf
-    scanf("%lf", &value);
+    scanf("%lg", &value);
 
     push(stk, value, &calcerror);
 

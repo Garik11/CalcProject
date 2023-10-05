@@ -1,5 +1,5 @@
-in
-in
-cos
-out
-hlt
+3
+3
+9
+11
+12
