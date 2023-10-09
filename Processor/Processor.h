@@ -61,4 +61,16 @@ void            ProcessorDump       (   ProcStruct      procs       ,
 
 void processor(const char* FILE_NAME);
 
+static inline void    PUSH    (Stack* stk, double value);
+static inline double  POP     (Stack* stk);
+static inline void    ADD     (Stack* stk);
+static inline void    DIV     (Stack* stk);
+static inline void    SUB     (Stack* stk);
+static inline void    MUL     (Stack* stk);
+static inline void    SIN     (Stack* stk);
+static inline void    COS     (Stack* stk);
+static inline void    SQRT    (Stack* stk);
+static inline void    OUT     (Stack* stk);
+static inline void    IN      (Stack* stk);
+
 #endif // !CALC_PROCESSOR_H

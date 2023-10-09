@@ -1,6 +1,7 @@
 in
 in
+mul
 in
-sin
+mul
 out
 hlt

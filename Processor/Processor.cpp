@@ -1,5 +1,42 @@
 #include "Processor.h"
 
+ProcStruct ProcessorCtor (const char* FILE_NAME){
+    ProcStruct outproc = {};
+
+    outproc.reg[0] = outproc.reg[1] = outproc.reg[2] = outproc.reg[3] = 0;
+
+    outproc.ip          = IP_START_POS      ;
+    outproc.code_size   = CODE_START_SIZE   ;
+    ProcessorGetCode(&outproc, FILE_NAME);
+
+    StackErrorsBitmask stackerror = STACK_ALL_OK;
+    outproc.stk = STACK_CTOR(&stackerror);
+    assert(stackerror == STACK_ALL_OK);
+
+    return outproc;
+}
+
+void ProcessorDtor(ProcStruct procs){
+    assert(procs.code != NULL);
+    free(procs.code);
+    procs.ip = PROC_POISON_HEX_NUM;
+    procs.code_size = PROC_POISON_HEX_NUM;
+    procs.reg[0] = procs.reg[1] = procs.reg[2] = procs.reg[3] = PROC_POISON_NUM;
+    StackDtor(procs.stk);
+}
+
+void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
+    size_t file_size = {};
+    assert(fsize(FILE_NAME, &file_size) == FSIZE_SUCCES);
+    procs->code = (char*)calloc(file_size, sizeof(ProcessorContainer));
+    assert(procs->code != NULL);
+    FILE* fp = fopen(FILE_NAME, "rb");
+    assert(fp != NULL);
+    assert(fread(procs->code, file_size, sizeof(ProcessorContainer), fp) == FREAD_SUCCES);
+    printf("%lu\n", file_size);
+    fclose(fp);
+}
+
 ProcessorError ProcessorVerificator(ProcStruct procs){
 
     ProcessorError outerror = PROC_ALL_OK;
@@ -82,81 +119,6 @@ void ProcessorDump(     ProcStruct      procs       ,
     assert(FUNC != NULL);
 }
 
-ProcStruct ProcessorCtor (const char* FILE_NAME){
-    ProcStruct outproc = {};
-
-    outproc.reg[0] = outproc.reg[1] = outproc.reg[2] = outproc.reg[3] = 0;
-
-    outproc.ip          = IP_START_POS      ;
-    outproc.code_size   = CODE_START_SIZE   ;
-    ProcessorGetCode(&outproc, FILE_NAME);
-
-    StackErrorsBitmask stackerror = STACK_ALL_OK;
-    outproc.stk = STACK_CTOR(&stackerror);
-    assert(stackerror == STACK_ALL_OK);
-
-    return outproc;
-}
-
-void ProcessorDtor(ProcStruct procs){
-    assert(procs.code != NULL);
-    free(procs.code);
-    procs.ip = PROC_POISON_HEX_NUM;
-    procs.code_size = PROC_POISON_HEX_NUM;
-    procs.reg[0] = procs.reg[1] = procs.reg[2] = procs.reg[3] = PROC_POISON_NUM;
-    StackDtor(procs.stk);
-}
-
-static inline void    PUSH    (Stack* stk, double value);
-static inline double  POP     (Stack* stk);
-static inline void    ADD     (Stack* stk);
-static inline void    DIV     (Stack* stk);
-static inline void    SUB     (Stack* stk);
-static inline void    MUL     (Stack* stk);
-static inline void    SIN     (Stack* stk);
-static inline void    COS     (Stack* stk);
-static inline void    SQRT    (Stack* stk);
-static inline void    OUT     (Stack* stk);
-static inline void    IN      (Stack* stk);
-
-static double atof_with_saves_offset(const char* str, size_t* pos){
-    assert(pos != NULL);
-
-    while(isspace(*str))str++;
-
-    double output = 0;
-    double exp = 0.1;
-    *pos = 0;
-
-    while(isdigit(*str)){
-        output *= 10;
-        output += (double)(*str - '0');
-        str++, ++*pos;        
-    }
-    if(*str == '.'){
-
-        str++, ++*pos;
-        while(isdigit(*str)){
-            output += (double)(*str - '0') * exp;
-            exp /= 10;
-            str++, ++*pos;
-        }
-    }
-    return output;
-}
-
-void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
-    size_t file_size = {};
-    assert(fsize(FILE_NAME, &file_size) == FSIZE_SUCCES);
-    procs->code = (char*)calloc(file_size, sizeof(ProcessorContainer));
-    assert(procs->code != NULL);
-    FILE* fp = fopen(FILE_NAME, "rb");
-    assert(fp != NULL);
-    assert(fread(procs->code, file_size, sizeof(ProcessorContainer), fp) == FREAD_SUCCES);
-    printf("%lu\n", file_size);
-    fclose(fp);
-}
-
 void processor(const char* FILE_NAME){
     assert(FILE_NAME != NULL);
 
@@ -165,7 +127,6 @@ void processor(const char* FILE_NAME){
     size_t IP_MAX = pr.code_size / sizeof(ProcessorContainer);
 
     while(pr.ip < IP_MAX){
-        //PROCESSOR_DUMP(pr, PROC_ALL_OK);
         double value = 0;
         printf("NOW CODE:%ld\n", (uint64_t)((double*)pr.code)[pr.ip]);
         printf("NOW IP:%lu\n", pr.ip);
