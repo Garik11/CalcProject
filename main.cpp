@@ -13,7 +13,7 @@ int main(void){
     assembler     (FILE_NAME_INPUT, FILE_NAME_OUTPUT          );
     TextErrors errors = TEXT_ALL_OK;
     Text *tx = readTextFromFile(FILE_NAME_OUTPUT, &errors);
-    processor     (tx->text, tx->lines                        );
+    processor     (FILE_NAME_OUTPUT);
     textDtor(tx);
     disassembler  (FILE_NAME_OUTPUT, FILE_NAME_DISASSEMBLER   );
 }

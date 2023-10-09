@@ -4,20 +4,20 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
 
-        FILE* inputfile  = fopen(FILE_NAME_INPUT,  "r");
+        FILE* inputfile  = fopen(FILE_NAME_INPUT,  "rb");
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w");
 
         assert(inputfile  != NULL);
         assert(outputfile != NULL);
 
-        static int asmint = {};
+        double command = {};
 
-        while(fscanf(inputfile, "%d", &asmint) != EOF){
+        while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){
             double value = 0;
-            switch (asmint){
+            switch ((uint64_t)command){
             case PUSH_C:
-                fscanf (inputfile, "%lg",       &value          );
-                fprintf(outputfile,"%s %lg\n",  PUSH_S, value   );
+                fread(&value, sizeof(ProcessorContainer), 1, inputfile);
+                fprintf(outputfile,"%s %lg\n",  PUSH_S, value);
                 break;
             CASE_ADD_INSTRUCTION_ZERO_ARGUMENTS(outputfile, IN  );
             CASE_ADD_INSTRUCTION_ZERO_ARGUMENTS(outputfile, ADD );

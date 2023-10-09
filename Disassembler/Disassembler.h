@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "../GlobalHeaders/asm.h"
+#include "../Processor/Processor.h"
 
 #define CASE_ADD_INSTRUCTION_ZERO_ARGUMENTS(OUTPUTFILE, DECD) case DECD##_C:fprintf(outputfile,"%s\n", DECD##_S);break;
 

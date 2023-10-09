@@ -8,6 +8,7 @@
 
 #include "./Stack/src/Stack/Stack.h"
 #include "./Stack/src/recalloc/recalloc.h"
+#include "../FileWork/TextReadFile.h"
 #include "../GlobalHeaders/asm.h"
 #include "../GlobalHeaders/config.h"
 
@@ -43,9 +44,9 @@ enum PROCESS_ERRORS{
     PROC_IP_POS_ERROR   = 1 << 2
 };
 
-ProcStruct      ProcessorCtor       (char** text, size_t lines);
+ProcStruct      ProcessorCtor       (const char* FILE_NAME);
 void            ProcessorDtor       (ProcStruct procs);
-void            ProcessorGetCode    (ProcStruct *pr, char** text, size_t lines);
+void            ProcessorGetCode    (ProcStruct *pr, const char* FILE_NAME);
 
 
 ProcessorError  ProcessorVerificator(ProcStruct procs);
@@ -58,6 +59,6 @@ void            ProcessorDump       (   ProcStruct      procs       ,
                                     );
 
 
-void processor(char **text, size_t lines);
+void processor(const char* FILE_NAME);
 
 #endif // !CALC_PROCESSOR_H

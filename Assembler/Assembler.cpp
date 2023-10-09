@@ -5,7 +5,7 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_OUTPUT != NULL);
 
         FILE* inputfile  = fopen(FILE_NAME_INPUT,  "r");
-        FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w");
+        FILE* outputfile = fopen(FILE_NAME_OUTPUT, "wb");
 
         assert(inputfile  != NULL);
         assert(outputfile != NULL);
@@ -17,37 +17,49 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
             if(strncmp(asmfunc, PUSH_S, PUSH_N) == 0){
                 double value = 0;
                 fscanf (inputfile, "%lg", &value);
-                fprintf(outputfile,"%d %lg\n",  PUSH_C, value);
+                double vr = PUSH_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
+                fwrite(&value, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, IN_S, IN_N) == 0){
-                fprintf(outputfile,"%d\n",  IN_C);
+                double vr = IN_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, ADD_S, ADD_N) == 0){
-                fprintf(outputfile,"%d\n",  ADD_C);
+                double vr = ADD_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, SUB_S, SUB_N) == 0){
-                fprintf(outputfile,"%d\n",  SUB_C);
+                double vr = SUB_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, MUL_S, MUL_N) == 0){
-                fprintf(outputfile,"%d\n",  MUL_C);
+                double vr = MUL_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, DIV_S, DIV_N) == 0){
-                fprintf(outputfile,"%d\n",  DIV_C);
+                double vr = DIV_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, SQRT_S, SQRT_N) == 0){
-                fprintf(outputfile,"%d\n",  SQRT_C);
+                double vr = SQRT_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, SIN_S, SIN_N) == 0){
-                fprintf(outputfile,"%d\n",  SIN_C);
+                double vr = SIN_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, COS_S, COS_N) == 0){
-                fprintf(outputfile,"%d\n",  COS_C);
+                double vr = COS_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, OUT_S, OUT_N) == 0){
-                fprintf(outputfile,"%d\n",  OUT_C);
+                double vr = OUT_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
             else if(strncmp(asmfunc, HLT_S, HLT_N) == 0){
-                fprintf(outputfile,"%d\n",  HLT_C);
+                double vr = HLT_C;
+                fwrite(&vr, 1, sizeof(double), outputfile);
             }
     }
 
