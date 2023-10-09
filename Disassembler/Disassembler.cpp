@@ -1,6 +1,6 @@
 #include "Disassembler.h"
 
-void decompile(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
+void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
 

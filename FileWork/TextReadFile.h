@@ -10,7 +10,7 @@ const int FSIZE_SUCCES = 0;
 const int FREAD_SUCCES = 1;
 
 size_t  fsize(const char* const FILE_NAME, size_t *FILE_SIZE);
-Text*   readTextFromFile(const char* const FILE_NAME, enum TextErrors* error);
+Text*   readTextFromFile(const char* const FILE_NAME, TextErrors* error);
 
 size_t  calculateRows(char* text, const size_t BSIZE);
 

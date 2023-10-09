@@ -1,6 +1,6 @@
 #include "Assembler.h"
 
-void compile(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
+void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
 

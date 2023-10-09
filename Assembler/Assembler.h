@@ -7,8 +7,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../GlobalHeaders/Calc.h"
+#include "../GlobalHeaders/asm.h"
 
-void compile(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
+void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
 
 #endif // !CALC_ASSEMBLER_H
