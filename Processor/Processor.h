@@ -14,14 +14,15 @@
 
 #define PROCESSOR_DUMP(procs, errors) ProcessorDump(procs, errors, #procs, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
-typedef double ProcessorContainer;
+typedef int64_t ProcessorContainer;
+typedef double ProcessorArgumentType;
 
 static uint64_t PROC_POISON_HEX_NUM = 0xDEADBABE;
-static ProcessorContainer PROC_POISON_NUM = *((ProcessorContainer*)&PROC_POISON_HEX_NUM);
+static ProcessorArgumentType PROC_POISON_NUM = *((ProcessorArgumentType*)&PROC_POISON_HEX_NUM);
 static const size_t PROC_CODE_MULT = 2;
 
 
-#define ProcesseorSpecificator "lf"
+#define ProcesseorSpecificator "ld"
 #define SpecificatorSize        "4"
 
 typedef uint64_t    ProcessorError;
@@ -30,7 +31,7 @@ struct ProcStruct
 {
     Stack *stk;
 
-    ProcessorContainer reg[4];
+    ProcessorArgumentType reg[4];
 
     char*   code;
     size_t  code_size;

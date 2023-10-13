@@ -69,10 +69,10 @@ void ProcessorDump(     ProcStruct      procs       ,
     printf("ip          = %lu\n", procs.ip);
 
     printf("{\n");
-    printf("rax = ""%" ProcesseorSpecificator "\n", procs.reg[0]);
-    printf("rbx = ""%" ProcesseorSpecificator "\n", procs.reg[1]);
-    printf("rcx = ""%" ProcesseorSpecificator "\n", procs.reg[2]);
-    printf("rdx = ""%" ProcesseorSpecificator "\n", procs.reg[3]);
+    printf("rax = ""%" "lf" "\n", procs.reg[0]);
+    printf("rbx = ""%" "lf" "\n", procs.reg[1]);
+    printf("rcx = ""%" "lf" "\n", procs.reg[2]);
+    printf("rdx = ""%" "lf" "\n", procs.reg[3]);
     printf("}\n");
 
     if(procs.code_size <= procs.ip)
@@ -84,8 +84,9 @@ void ProcessorDump(     ProcStruct      procs       ,
             for(size_t pos = procs.ip - 10; pos < procs.ip + 10; pos++)
                 printf("%"SpecificatorSize"lu ", pos);
             putchar('\n');
-            for(size_t pos = procs.ip - 10; pos < procs.ip + 10; pos++)
-                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos]);
+            for(size_t pos = procs.ip - 10; pos < procs.ip + 10; pos++){
+                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & 0x00000000FFFFFFFF);
+            }
             putchar('\n');
             if(procs.code_size > procs.ip){
                 for(size_t pos = procs.ip - 10; pos < procs.ip; pos++)
@@ -98,7 +99,7 @@ void ProcessorDump(     ProcStruct      procs       ,
                 printf("%"SpecificatorSize"lu ", pos);
             putchar('\n');
             for(size_t pos = 0; pos < procs.ip + 10; pos++)
-                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos]);
+                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & 0x00000000FFFFFFFF);
             putchar('\n');
             if(procs.code_size > procs.ip){
                 for(size_t pos = 0; pos < procs.ip; pos++)
@@ -128,14 +129,28 @@ void processor(const char* FILE_NAME){
 
     while(pr.ip < IP_MAX){
         double value = 0;
-        printf("NOW CODE:%ld\n", (uint64_t)((double*)pr.code)[pr.ip]);
-        printf("NOW IP:%lu\n", pr.ip);
-        switch ((uint64_t)((double*)pr.code)[pr.ip++]){
+
+        int64_t nowcode = ((uint64_t*)pr.code)[pr.ip++];
+
+        printf("NOW INST: %ld \n", nowcode & 0x00000000FFFFFFFF);
+        PROCESSOR_DUMP(pr, PROC_ALL_OK);
+        switch (nowcode & 0x00000000FFFFFFFF){
         case PUSH_C:
+            printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
             PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
+            break;
+        case RPUSH_C:
+            printf("%lld\n", (nowcode & 0xFFFFFFFF00000000) >> 32);
+            assert(((nowcode & 0xFFFFFFFF00000000) >> 32) < 4);
+            printf("PUSHED:%lf\n", pr.reg[(nowcode & 0xFFFFFFFF00000000) >> 32]);
+            PUSH(pr.stk, pr.reg[(nowcode & 0xFFFFFFFF00000000) >> 32]);
             break;
         case POP_C:
             POP(pr.stk);
+            break;
+        case RPOP_C:
+            assert(((nowcode & 0xFFFFFFFF00000000) >> 32) < 4);
+            pr.reg[(nowcode & 0xFFFFFFFF00000000) >> 32] = POP(pr.stk);
             break;
         case IN_C:
             IN(pr.stk);

@@ -1,0 +1,20 @@
+in
+push rax
+in
+push rbx
+in
+push rcx
+push rbx
+push rbx
+mul
+push 4
+push 4
+push 4
+push 4e+11
+push rax
+push rcx
+mul
+mul
+sub
+out
+hlt

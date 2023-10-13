@@ -1,7 +1,0 @@
-in
-in
-mul
-in
-mul
-out
-hlt

@@ -30,9 +30,11 @@ static const size_t OUT_N  = 3;
 static const size_t HLT_N  = 3;
 
 enum COMMANDCODS{
-    SIGILL_С = 0,
-    PUSH_C      ,
-    POP_C       ,
+    SIGILL_С    = 0x0,
+    PUSH_C      = 0x21,
+    RPUSH_C     = 0x11,
+    RPOP_C      = 0x2B,
+    POP_C       = 0x35,
     IN_C        ,
     ADD_C       ,
     SUB_C       ,

@@ -8,6 +8,8 @@
 #include <assert.h>
 
 #include "../GlobalHeaders/asm.h"
+#include "../Processor/Stack/src/recalloc/recalloc.h"
+#include "../Processor/Processor.h"
 
 void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
 

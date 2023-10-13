@@ -10,14 +10,21 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(inputfile  != NULL);
         assert(outputfile != NULL);
 
-        double command = {};
+        int64_t command = {};
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){
-            double value = 0;
-            switch ((uint64_t)command){
+            static char argument[100] = {};
+            static double dubarg = 0;
+            switch (command & 0x00000000FFFFFFFF){
             case PUSH_C:
-                fread(&value, sizeof(ProcessorContainer), 1, inputfile);
-                fprintf(outputfile,"%s %lg\n",  PUSH_S, value);
+                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);
+                fprintf(outputfile,"%s %lg\n",  PUSH_S, dubarg);
+                break;
+            case RPUSH_C:
+                fprintf(outputfile,"%s %c%c%c\n",  PUSH_S, 'r', 'a' + ((command) >> 32), 'x');
+                break;
+            case RPOP_C:
+                fprintf(outputfile,"%s %c%c%c\n",  PUSH_S, 'r', 'a' + ((command) >> 32), 'x');
                 break;
             CASE_ADD_INSTRUCTION_ZERO_ARGUMENTS(outputfile, IN  );
             CASE_ADD_INSTRUCTION_ZERO_ARGUMENTS(outputfile, ADD );
