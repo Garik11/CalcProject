@@ -8,9 +8,6 @@ push rbx
 push rbx
 mul
 push 4
-push 4
-push 4
-push 4e+11
 push rax
 push rcx
 mul

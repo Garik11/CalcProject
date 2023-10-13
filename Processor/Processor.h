@@ -21,9 +21,11 @@ static uint64_t PROC_POISON_HEX_NUM = 0xDEADBABE;
 static ProcessorArgumentType PROC_POISON_NUM = *((ProcessorArgumentType*)&PROC_POISON_HEX_NUM);
 static const size_t PROC_CODE_MULT = 2;
 
-
-#define ProcesseorSpecificator "ld"
+#define ProcesseorSpecificator "lld"
 #define SpecificatorSize        "4"
+
+static const int64_t MASK_CODE  = 0x00000000FFFFFFFF;
+static const int64_t MASK_R     = 0xFFFFFFFF00000000;
 
 typedef uint64_t    ProcessorError;
 
@@ -47,7 +49,7 @@ enum PROCESS_ERRORS{
 
 ProcStruct      ProcessorCtor       (const char* FILE_NAME);
 void            ProcessorDtor       (ProcStruct procs);
-void            ProcessorGetCode    (ProcStruct *pr, const char* FILE_NAME);
+void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME);
 
 
 ProcessorError  ProcessorVerificator(ProcStruct procs);
