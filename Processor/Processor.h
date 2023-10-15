@@ -13,6 +13,7 @@
 #include "../GlobalHeaders/config.h"
 
 #define PROCESSOR_DUMP(procs, errors) ProcessorDump(procs, errors, #procs, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define print_error(error) printf("ERROR: %s!\n", #error);
 
 typedef int64_t ProcessorContainer;
 typedef double ProcessorArgumentType;
@@ -21,7 +22,7 @@ static uint64_t PROC_POISON_HEX_NUM = 0xDEADBABE;
 static ProcessorArgumentType PROC_POISON_NUM = *((ProcessorArgumentType*)&PROC_POISON_HEX_NUM);
 static const size_t PROC_CODE_MULT = 2;
 
-#define ProcesseorSpecificator "lld"
+#define ProcesseorSpecificator "ld"
 #define SpecificatorSize        "4"
 
 static const int64_t MASK_CODE  = 0x00000000FFFFFFFF;
@@ -51,6 +52,7 @@ ProcStruct      ProcessorCtor       (const char* FILE_NAME);
 void            ProcessorDtor       (ProcStruct procs);
 void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME);
 
+void ProcessortOutAllErrors(ProcessorError  errors);
 
 ProcessorError  ProcessorVerificator(ProcStruct procs);
 void            ProcessorDump       (   ProcStruct      procs       , 
@@ -63,17 +65,5 @@ void            ProcessorDump       (   ProcStruct      procs       ,
 
 
 void processor(const char* FILE_NAME);
-
-static inline void    PUSH    (Stack* stk, double value);
-static inline double  POP     (Stack* stk);
-static inline void    ADD     (Stack* stk);
-static inline void    DIV     (Stack* stk);
-static inline void    SUB     (Stack* stk);
-static inline void    MUL     (Stack* stk);
-static inline void    SIN     (Stack* stk);
-static inline void    COS     (Stack* stk);
-static inline void    SQRT    (Stack* stk);
-static inline void    OUT     (Stack* stk);
-static inline void    IN      (Stack* stk);
 
 #endif // !CALC_PROCESSOR_H

@@ -1,13 +1,62 @@
 #include "Assembler.h"
 
+void toupper_all(char *str){
+    for(char* p = str; *p != 0; p++) 
+        *p = (char)toupper(*p);
+}
+
+#define DEF_CMD(name, rname, num, args, ...)                                                                        \
+                if(strcmp(asmfunc, #name) == 0){                                                                    \
+                    if(args == 0){                                                                                  \
+                            int64_t spucommand = num;                                                               \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
+                            buffer_offset += sizeof(ProcessorContainer);                                            \
+                    }                                                                                               \
+                    else if(args == 1){                                                                             \
+                        sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                            \
+                        inbuffer_offset += (size_t)asm_offset;                                                                \
+                        toupper_all(argument);                                                                      \
+                        printf("YA TYT %d\n", args);                                                                \
+                        if(*argument == 'R'){                                                                       \
+                            int64_t spucommand = ((int64_t)(*(argument + 1) - 'A')) << 32 | rname##_C;              \
+                            printf("MY DOUBLE:%s\n", argument);                                                     \
+                            printf("MY DOUBLE NUM:%ld\n", (int64_t)(*(argument + 1) - 'A'));                        \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
+                            buffer_offset += sizeof(ProcessorContainer);                                            \
+                        }                                                                                           \
+                        else {                                                                                      \
+                            double value = atof(argument);                                                          \
+                            printf("MY DOUBLE:%lf\n", value);                                                       \
+                            printf("MY DOUBLE:%s\n", argument);                                                     \
+                            int64_t spucommand = num;                                                               \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
+                            buffer_offset += sizeof(ProcessorContainer);                                            \
+                            memcpy((void*)(buffer + buffer_offset), &value, sizeof(ProcessorContainer));            \
+                            buffer_offset += sizeof(ProcessorContainer);                                            \
+                        }                                                                                           \
+                    }                                                                                               \
+                }                                                                                                   \
+                else
+
 void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
 
-        FILE* inputfile  = fopen(FILE_NAME_INPUT,  "r");
+        printf("%s %s\n", FILE_NAME_INPUT, FILE_NAME_OUTPUT);
+
+        size_t inbuffersize = 0;
+        assert(fsize(FILE_NAME_INPUT, &inbuffersize) == FSIZE_SUCCES);
+        char* inbuffer = (char*)calloc(sizeof(char), inbuffersize + 2);
+        assert(inbuffer != NULL);
+        FILE* infile = fopen(FILE_NAME_INPUT, "r");
+        assert(infile != NULL);
+        assert(fread(inbuffer, inbuffersize, sizeof(char), infile) == FREAD_SUCCES);
+        size_t inbuffer_offset = 0;
+        toupper_all(inbuffer);
+        fclose(infile);
+
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "wb");
 
-        assert(inputfile  != NULL);
         assert(outputfile != NULL);
 
         static const size_t MAX_FUNC_NAME_SIZE = 10;
@@ -20,7 +69,10 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         char* buffer = (char*) calloc(buffer_size, sizeof(char));
         size_t buffer_offset = 0;
 
-        while(fscanf(inputfile, "%s", asmfunc) != EOF){
+        int asm_offset = 0;
+        while(sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF){
+            
+            inbuffer_offset += (size_t)asm_offset;
 
             static char argument[MAX_ARGUMENT_SIZE] = {};
 
@@ -30,85 +82,14 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
                 buffer_size *= 2;
                 buffer = (char*)new_data;
             }
-
-            if(strncmp(asmfunc, PUSH_S, PUSH_N) == 0){
-                fscanf (inputfile, "%s", argument);
-                if(*argument == 'r'){
-                    int64_t spucommand = ((int64_t)(*(argument + 1) - 'a')) << 32 | RPUSH_C;
-                                    int64_t i = spucommand;
-                    memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                    buffer_offset += sizeof(ProcessorContainer);
-                } 
-                else {
-                    double value = atof(argument);
-                    int64_t spucommand = PUSH_C;
-                    memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                    buffer_offset += sizeof(ProcessorContainer);
-                    memcpy((void*)(buffer + buffer_offset), &value, sizeof(ProcessorContainer));
-                    buffer_offset += sizeof(ProcessorContainer);
-                }
-            }
-            else if(strncmp(asmfunc, POP_S, POP_N) == 0){
-                fscanf (inputfile, "%s", argument);
-                int64_t spucommand = ((int64_t)(*(argument + 1) - 'a')) << 32 | RPOP_C;
-                memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, IN_S, IN_N) == 0){
-                int64_t spucommand = IN_C;
-                memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, ADD_S, ADD_N) == 0){
-                int64_t spucommand = ADD_C;
-                memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, SUB_S, SUB_N) == 0){
-                int64_t spucommand = SUB_C;
-                memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, MUL_S, MUL_N) == 0){
-                int64_t spucommand = MUL_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, DIV_S, DIV_N) == 0){
-                int64_t spucommand = DIV_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, SQRT_S, SQRT_N) == 0){
-                int64_t spucommand = SQRT_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, SIN_S, SIN_N) == 0){
-                int64_t spucommand = SIN_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, COS_S, COS_N) == 0){
-                int64_t spucommand = COS_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, OUT_S, OUT_N) == 0){
-                int64_t spucommand = OUT_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
-            else if(strncmp(asmfunc, HLT_S, HLT_N) == 0){
-                int64_t spucommand = HLT_C;
-                memcpy((void*)(buffer+ buffer_offset), &spucommand, sizeof(ProcessorContainer));
-                buffer_offset += sizeof(ProcessorContainer);            
-            }
+            toupper_all(asmfunc);
+            printf("asmfunc = %s\n", asmfunc);
+            #include "../GlobalHeaders/DSL.h"
+            /*else*/ void(0);
     }
 
     fwrite(buffer, buffer_offset, sizeof(char), outputfile);
 
     free(buffer);
-    fclose(inputfile );
     fclose(outputfile);
 }

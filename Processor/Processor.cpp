@@ -1,5 +1,17 @@
 #include "Processor.h"
 
+static inline double POP    (Stack* stk);
+static inline void PUSH     (Stack* stk, double value);
+static inline void ADD      (Stack* stk);
+static inline void DIV      (Stack* stk);
+static inline void SUB      (Stack* stk);
+static inline void MUL      (Stack* stk);
+static inline void SIN      (Stack* stk);
+static inline void COS      (Stack* stk);
+static inline void SQRT     (Stack* stk);
+static inline void OUT      (Stack* stk);
+static inline void IN       (Stack* stk);
+
 ProcStruct ProcessorCtor (const char* FILE_NAME){
     ProcStruct outproc = {};
 
@@ -26,6 +38,9 @@ void ProcessorDtor(ProcStruct procs){
 }
 
 void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
+
+    assert(FILE_NAME != NULL);
+    printf("%s \n", FILE_NAME);
 
     size_t file_size = {};
     assert(fsize(FILE_NAME, &file_size) == FSIZE_SUCCES);
@@ -55,18 +70,25 @@ ProcessorError ProcessorVerificator(ProcStruct procs){
     return outerror;
 }
 
+void ProcessortOutAllErrors(ProcessorError  errors){
+    if(errors & PROC_CODE_ERROR) print_error(PROC_CODE_ERROR);
+    if(errors & PROC_STACK_ERROR) print_error(PROC_STACK_ERROR);
+    if(errors & PROC_IP_POS_ERROR) print_error(PROC_IP_POS_ERROR);
+}
+
 void ProcessorDump(     ProcStruct      procs       , 
                         ProcessorError  errors      , 
                         const char*     PROCS_NAME  ,
-                        const char*     FILE        , 
-                        int             LINE        , 
-                        const char*     FUNC
+                        const char*     FILE_NAME   , 
+                        int             LINE_NUM    , 
+                        const char*     FUNC_NAME
                     )
 {
-    if(PROCS_NAME != NULL && FILE != NULL && FUNC != NULL)
-        printf("Procs \"%s\" called from %s(%d) in %s\n", PROCS_NAME , FILE, LINE, FUNC);
+    ProcessortOutAllErrors(errors);
+    if(PROCS_NAME != NULL && FILE_NAME != NULL && FUNC_NAME != NULL)
+        printf("Procs \"%s\" called from %s(%d) in %s\n", PROCS_NAME , FILE_NAME, LINE_NUM, FUNC_NAME);
     else
-        printf("Procs ??? called from ???(???) in ???\n");
+        printf("Procs \?\?\? called from \?\?\?(\?\?\?) in \?\?\?\n");
 
     printf("code_size   = %lu\n", procs.code_size);
     printf("ip          = %lu\n", procs.ip);
@@ -88,7 +110,7 @@ void ProcessorDump(     ProcStruct      procs       ,
                 printf("%"SpecificatorSize"lu ", pos);
             putchar('\n');
             for(size_t pos = procs.ip - 10; pos < procs.ip + 10; pos++){
-                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & MASK_CODE);
+                printf("%" SpecificatorSize ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & MASK_CODE);
             }
             putchar('\n');
             if(procs.code_size > procs.ip){
@@ -102,7 +124,7 @@ void ProcessorDump(     ProcStruct      procs       ,
                 printf("%"SpecificatorSize"lu ", pos);
             putchar('\n');
             for(size_t pos = 0; pos < procs.ip + 10; pos++)
-                printf("%" SpecificatorSize ".0"ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & MASK_CODE);
+                printf("%" SpecificatorSize ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & MASK_CODE);
             putchar('\n');
             if(procs.code_size > procs.ip){
                 for(size_t pos = 0; pos < procs.ip; pos++)
@@ -114,13 +136,13 @@ void ProcessorDump(     ProcStruct      procs       ,
         printf("}\n");
     }
     
-    StackDump(procs.stk, STACK_ALL_OK, "procs.stk", FILE, LINE, FUNC);
+    StackDump(procs.stk, STACK_ALL_OK, "procs.stk", FILE_NAME, LINE_NUM, FUNC_NAME);
 
     assert(procs.code != NULL);
     assert(procs.stk  != NULL);
     assert(procs.ip   < procs.code_size);
-    assert(FILE != NULL);
-    assert(FUNC != NULL);
+    assert(FILE_NAME != NULL);
+    assert(FUNC_NAME != NULL);
 }
 
 void processor(const char* FILE_NAME){
@@ -132,7 +154,7 @@ void processor(const char* FILE_NAME){
 
     while(pr.ip < IP_MAX){
 
-        int64_t nowcode = ((uint64_t*)pr.code)[pr.ip++];
+        int64_t nowcode = ((int64_t*)pr.code)[pr.ip++];
 
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
@@ -140,7 +162,7 @@ void processor(const char* FILE_NAME){
         switch (nowcode & MASK_CODE){
         case RPUSH_C:{
             int64_t R_STATUS = (nowcode & MASK_R) >> 32;
-            printf("%lld\n", R_STATUS);
+            printf("%ld\n", R_STATUS);
             assert(R_STATUS < 4);
             printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
             PUSH(pr.stk, pr.reg[R_STATUS]);
@@ -189,7 +211,7 @@ void processor(const char* FILE_NAME){
         case HLT_C:
             goto HLT;
         default /*SIGILL_C*/:
-            printf("Incorrect instruction \"%d\", terminate process!\n", ((uint64_t*)(pr.code))[pr.ip++]);
+            printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((int64_t*)(pr.code))[pr.ip++]);
             goto HLT;
         }
     }
@@ -197,6 +219,8 @@ void processor(const char* FILE_NAME){
     PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
     ProcessorDtor(pr);
+
+
 }
 
 static inline void PUSH(Stack* stk, double value){
