@@ -25,8 +25,8 @@ static const size_t PROC_CODE_MULT = 2;
 #define ProcesseorSpecificator "ld"
 #define SpecificatorSize        "4"
 
-static const int64_t MASK_CODE  = 0x00000000FFFFFFFF;
-static const int64_t MASK_R     = 0xFFFFFFFF00000000;
+static const int64_t MASK_CODE  = (int64_t)0x00000000FFFFFFFF;
+static const int64_t MASK_R     = (int64_t)0xFFFFFFFF00000000;
 
 typedef uint64_t    ProcessorError;
 

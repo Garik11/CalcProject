@@ -13,8 +13,8 @@ void toupper_all(char *str){
                             buffer_offset += sizeof(ProcessorContainer);                                            \
                     }                                                                                               \
                     else if(args == 1){                                                                             \
-                        sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                            \
-                        inbuffer_offset += (size_t)asm_offset;                                                                \
+                        sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                          \
+                        inbuffer_offset += (size_t)asm_offset;                                                      \
                         toupper_all(argument);                                                                      \
                         printf("YA TYT %d\n", args);                                                                \
                         if(*argument == 'R'){                                                                       \
@@ -91,5 +91,6 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
     fwrite(buffer, buffer_offset, sizeof(char), outputfile);
 
     free(buffer);
+    free(inbuffer);
     fclose(outputfile);
 }
