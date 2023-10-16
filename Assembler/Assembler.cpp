@@ -15,7 +15,6 @@ void toupper_all(char *str){
                     else if(args == 1){                                                                             \
                         sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                          \
                         inbuffer_offset += (size_t)asm_offset;                                                      \
-                        toupper_all(argument);                                                                      \
                         printf("YA TYT %d\n", args);                                                                \
                         if(*argument == 'R'){                                                                       \
                             int64_t spucommand = ((int64_t)(*(argument + 1) - 'A')) << 32 | rname##_C;              \
@@ -82,7 +81,6 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
                 buffer_size *= 2;
                 buffer = (char*)new_data;
             }
-            toupper_all(asmfunc);
             printf("asmfunc = %s\n", asmfunc);
             #include "../GlobalHeaders/DSL.h"
             /*else*/ void(0);
