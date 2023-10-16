@@ -1,16 +1,16 @@
 #include "Processor.h"
 
-static inline double POP    (Stack* stk);
-static inline void PUSH     (Stack* stk, double value);
-static inline void ADD      (Stack* stk);
-static inline void DIV      (Stack* stk);
-static inline void SUB      (Stack* stk);
-static inline void MUL      (Stack* stk);
-static inline void SIN      (Stack* stk);
-static inline void COS      (Stack* stk);
-static inline void SQRT     (Stack* stk);
-static inline void OUT      (Stack* stk);
-static inline void IN       (Stack* stk);
+static inline double DO_POP    (Stack* stk);
+static inline void DO_PUSH     (Stack* stk, double value);
+static inline void DO_ADD      (Stack* stk);
+static inline void DO_DIV      (Stack* stk);
+static inline void DO_SUB      (Stack* stk);
+static inline void DO_MUL      (Stack* stk);
+static inline void DO_SIN      (Stack* stk);
+static inline void DO_COS      (Stack* stk);
+static inline void DO_SQRT     (Stack* stk);
+static inline void DO_OUT      (Stack* stk);
+static inline void DO_IN       (Stack* stk);
 
 ProcStruct ProcessorCtor (const char* FILE_NAME){
     ProcStruct outproc = {};
@@ -145,6 +145,11 @@ void ProcessorDump(     ProcStruct      procs       ,
     assert(FUNC_NAME != NULL);
 }
 
+#define DEF_CMD(name, rname, num, args, ...)\
+    case name##_C:                          \
+        __VA_ARGS__                         \
+        break;                              
+
 void processor(const char* FILE_NAME){
     assert(FILE_NAME != NULL);
 
@@ -160,129 +165,80 @@ void processor(const char* FILE_NAME){
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
         
         switch (nowcode & MASK_CODE){
-        case RPUSH_C:{
-            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
-            printf("%ld\n", R_STATUS);
-            assert(R_STATUS < 4);
-            printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
-            PUSH(pr.stk, pr.reg[R_STATUS]);
-            break;
-        }
-        case RPOP_C:{
-            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
-            assert(R_STATUS < 4);
-            pr.reg[R_STATUS] = POP(pr.stk);
-            break;
-        }
-        case PUSH_C:
-            printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
-            PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
-            break;
-        case POP_C:
-            POP(pr.stk);
-            break;
-        case IN_C:
-            IN(pr.stk);
-            break;
-        case ADD_C:
-            ADD(pr.stk);
-            break;
-        case SUB_C:
-            SUB(pr.stk);
-            break;
-        case MUL_C:
-            MUL(pr.stk);
-            break;
-        case DIV_C:
-            DIV(pr.stk);
-            break;
-        case SQRT_C:
-            SQRT(pr.stk);
-            break;
-        case SIN_C:
-            SIN(pr.stk);
-            break;
-        case COS_C:
-            COS(pr.stk);
-            break;
-        case OUT_C:
-            OUT(pr.stk);
-            break;
-        case HLT_C:
-            goto HLT;
-        default /*SIGILL_C*/:
-            printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((int64_t*)(pr.code))[pr.ip++]);
-            goto HLT;
+            #include "../GlobalHeaders/DSL.h"
+            default /*SIGILL_C*/:
+                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((int64_t*)(pr.code))[pr.ip++]);
+                goto HLT;
         }
     }
     HLT:
+        void(0);
+
     PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
     ProcessorDtor(pr);
-
-
 }
 
-static inline void PUSH(Stack* stk, double value){
+static inline void DO_PUSH(Stack* stk, double value){
     StackErrorsBitmask  stackerror = STACK_ALL_OK;
     StackPush(stk, value, &stackerror);
     assert(stackerror == STACK_ALL_OK);
 }
 
-static inline double POP(Stack* stk){
+static inline double DO_POP(Stack* stk){
     StackErrorsBitmask  stackerror = STACK_ALL_OK;
     double outnum = StackPop(stk, &stackerror);
     assert(stackerror == STACK_ALL_OK);
     return outnum;
 }
 
-static inline void ADD(Stack* stk){
-    double first_value  = POP(stk);
-    double second_value = POP(stk);
-    PUSH(stk, first_value + second_value);
+static inline void DO_ADD(Stack* stk){
+    double first_value  = DO_POP(stk);
+    double second_value = DO_POP(stk);
+    DO_PUSH(stk, first_value + second_value);
 }
 
 
-static inline void DIV(Stack* stk){
-    double first_value  = POP(stk);
-    double second_value = POP(stk);
-    PUSH(stk, second_value / first_value);
+static inline void DO_DIV(Stack* stk){
+    double first_value  = DO_POP(stk);
+    double second_value = DO_POP(stk);
+    DO_PUSH(stk, second_value / first_value);
 }
 
-static inline void SUB(Stack* stk){
-    double first_value  = POP(stk);
-    double second_value = POP(stk);
-    PUSH(stk, second_value - first_value);
+static inline void DO_SUB(Stack* stk){
+    double first_value  = DO_POP(stk);
+    double second_value = DO_POP(stk);
+    DO_PUSH(stk, second_value - first_value);
 }
 
-static inline void MUL(Stack* stk){
-    double first_value  = POP(stk);
-    double second_value = POP(stk);
-    PUSH(stk, second_value * first_value);
+static inline void DO_MUL(Stack* stk){
+    double first_value  = DO_POP(stk);
+    double second_value = DO_POP(stk);
+    DO_PUSH(stk, second_value * first_value);
 }
 
-static inline void SIN(Stack* stk){
-    PUSH(stk, sin(POP(stk)));
+static inline void DO_SIN(Stack* stk){
+    DO_PUSH(stk, sin(DO_POP(stk)));
 }
 
-static inline void COS(Stack* stk){
-    PUSH(stk, cos(POP(stk)));
+static inline void DO_COS(Stack* stk){
+    DO_PUSH(stk, cos(DO_POP(stk)));
 }
 
-static inline void SQRT(Stack* stk){
-    PUSH(stk, sqrt(POP(stk)));
+static inline void DO_SQRT(Stack* stk){
+    DO_PUSH(stk, sqrt(DO_POP(stk)));
 }
 
-static inline void OUT(Stack* stk){
-    double value  = POP(stk);
-    PUSH(stk, value);
+static inline void DO_OUT(Stack* stk){
+    double value  = DO_POP(stk);
+    DO_PUSH(stk, value);
     printf("Your value : %lf\n", value);
 
 }
 
-static inline void IN(Stack* stk){
+static inline void DO_IN(Stack* stk){
     double value = {};
     printf("Enter value:\n");
     assert(scanf("%lg", &value) == 1);
-    PUSH(stk, value);
+    DO_PUSH(stk, value);
 }

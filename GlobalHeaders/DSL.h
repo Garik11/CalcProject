@@ -20,20 +20,55 @@ enum COMMANDCODS{
 #define NULL_REG
 #define NULL_REG_C 0
 
-DEF_CMD(RPUSH   ,   NULL_REG, 0x11  ,   1)
-DEF_CMD(PUSH    ,   RPUSH   , 0x21  ,   1)
-DEF_CMD(RPOP    ,   NULL_REG, 0x2B  ,   1)
-DEF_CMD(POP     ,   RPOP    , 0x35  ,   1)
-DEF_CMD(IN      ,   NULL_REG, 54    ,   0)
-DEF_CMD(ADD     ,   NULL_REG, 55    ,   0)
-DEF_CMD(SUB     ,   NULL_REG, 56    ,   0)
-DEF_CMD(MUL     ,   NULL_REG, 57    ,   0)
-DEF_CMD(DIV     ,   NULL_REG, 58    ,   0)
-DEF_CMD(SQRT    ,   NULL_REG, 59    ,   0)
-DEF_CMD(SIN     ,   NULL_REG, 60    ,   0)
-DEF_CMD(COS     ,   NULL_REG, 61    ,   0)
-DEF_CMD(OUT     ,   NULL_REG, 62    ,   0)
-DEF_CMD(HLT     ,   NULL_REG, 63    ,   0)
+DEF_CMD(RPUSH   ,   NULL_REG, 0x11  ,   1, {
+            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
+            printf("%ld\n", R_STATUS);
+            assert(R_STATUS < 4);
+            printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
+            DO_PUSH(pr.stk, pr.reg[R_STATUS]);
+})
+DEF_CMD(PUSH    ,   RPUSH   , 0x21  ,   1, {
+            printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
+            DO_PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
+})
+DEF_CMD(RPOP    ,   NULL_REG, 0x2B  ,   1, {
+            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
+            assert(R_STATUS < 4);
+            pr.reg[R_STATUS] = DO_POP(pr.stk);
+})
+DEF_CMD(POP     ,   RPOP    , 0x35  ,   1, {
+    DO_POP(pr.stk);
+})
+DEF_CMD(IN      ,   NULL_REG, 54    ,   0, {
+    DO_IN(pr.stk);
+})
+DEF_CMD(ADD     ,   NULL_REG, 55    ,   0, {
+    DO_ADD(pr.stk);
+})
+DEF_CMD(SUB     ,   NULL_REG, 56    ,   0, {
+    DO_SUB(pr.stk);
+})
+DEF_CMD(MUL     ,   NULL_REG, 57    ,   0, {
+    DO_MUL(pr.stk);
+})
+DEF_CMD(DIV     ,   NULL_REG, 58    ,   0, {
+    DO_DIV(pr.stk);
+})
+DEF_CMD(SQRT    ,   NULL_REG, 59    ,   0, {
+    DO_SQRT(pr.stk);
+})
+DEF_CMD(SIN     ,   NULL_REG, 60    ,   0, {
+    DO_SIN(pr.stk);
+})
+DEF_CMD(COS     ,   NULL_REG, 61    ,   0, {
+    DO_COS(pr.stk);
+})
+DEF_CMD(OUT     ,   NULL_REG, 62    ,   0, {
+    DO_OUT(pr.stk);
+})
+DEF_CMD(HLT     ,   NULL_REG, 63    ,   0, {
+    break;
+})
 
 #undef DEF_CMD
 #undef NULL_REG

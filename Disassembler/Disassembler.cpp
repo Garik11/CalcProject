@@ -6,6 +6,24 @@ char* creacte_reg(long offset){
     return reg;
 }
 
+#define DEF_CMD(name, rname, num, args, ...)                                            \
+    case nmae##_C:{                                                                     \
+        if(args == 0){                                                                  \
+            fprintf(outputfile,"%s\n", name##_S)                                        \
+        }                                                                               \
+        else if(args == 1){                                                             \
+            if(((command) >> 32) == 0){                                                 \
+                fprintf(outputfile,"%s %s\n",  name##_S, creacte_reg((command) >> 32)); \
+            }                                                                           \
+            else {                                                                      \
+                double dubarg = 0;                                                      \
+                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);               \
+                fprintf(outputfile,"%s %lg\n",  name##_S, dubarg);                      \
+            }                                                                           \
+        }                                                                               \
+        break;                                                                          \
+    }                                                                                   
+
 void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
