@@ -6,7 +6,7 @@ RFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Waggressive-loo
 
 PROGRAMNAME = calcexec
 
-all: obj calc clean
+all: obj calc
 
 obj:
 	@mkdir obj

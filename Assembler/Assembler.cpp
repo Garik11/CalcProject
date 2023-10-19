@@ -5,43 +5,49 @@ void toupper_all(char *str){
         *p = (char)toupper(*p);
 }
 
-#define DEF_CMD(name, rname, num, args, ...)                                                                        \
-                if(strcmp(asmfunc, #name) == 0){                                                                    \
-                    if(args == 0){                                                                                  \
-                            int64_t spucommand = num;                                                               \
-                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
-                            buffer_offset += sizeof(ProcessorContainer);                                            \
-                    }                                                                                               \
-                    else if(args == 1){                                                                             \
-                        sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                          \
-                        inbuffer_offset += (size_t)asm_offset;                                                      \
-                        printf("YA TYT %d\n", args);                                                                \
-                        if(*argument == 'R'){                                                                       \
-                            int64_t spucommand = ((int64_t)(*(argument + 1) - 'A')) << 32 | rname##_C;              \
-                            printf("MY DOUBLE:%s\n", argument);                                                     \
-                            printf("MY DOUBLE NUM:%ld\n", (int64_t)(*(argument + 1) - 'A'));                        \
-                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
-                            buffer_offset += sizeof(ProcessorContainer);                                            \
-                        }                                                                                           \
-                        else {                                                                                      \
-                            double value = atof(argument);                                                          \
-                            printf("MY DOUBLE:%lf\n", value);                                                       \
-                            printf("MY DOUBLE:%s\n", argument);                                                     \
-                            int64_t spucommand = num;                                                               \
-                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));       \
-                            buffer_offset += sizeof(ProcessorContainer);                                            \
-                            memcpy((void*)(buffer + buffer_offset), &value, sizeof(ProcessorContainer));            \
-                            buffer_offset += sizeof(ProcessorContainer);                                            \
-                        }                                                                                           \
-                    }                                                                                               \
-                }                                                                                                   \
+#define DEF_CMD(name, rname, num, args, ...)                                                                                                    \
+                if(strcmp(asmfunc, #name) == 0){                                                                                                \
+                    if(args == 0){                                                                                                              \
+                            ProcessorContainer spucommand = num;                                                                                \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));                                   \
+                            buffer_offset += sizeof(ProcessorContainer);                                                                        \
+                    }                                                                                                                           \
+                    else if(args == 1){                                                                                                         \
+                        sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                                                      \
+                        inbuffer_offset += (size_t)asm_offset;                                                                                  \
+                        printf("YA TYT %d\n", args);                                                                                            \
+                        if(*argument == 'R'){                                                                                                   \
+                            ProcessorContainer spucommand = (((*(argument + 1) - 'A' + REG_OFFSET)) << REG_BITS) | rname;   \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));                                   \
+                            buffer_offset += sizeof(ProcessorContainer);                                                                        \
+                        }                                                                                                                       \
+                        else {                                                                                                                  \
+                            double value = atof(argument);                                                                                      \
+                            ProcessorContainer spucommand = num;                                                                                \
+                            memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));                                   \
+                            buffer_offset += sizeof(ProcessorContainer);                                                                        \
+                            memcpy((void*)(buffer + buffer_offset), &value, sizeof(ProcessorContainer));                                        \
+                            buffer_offset += sizeof(ProcessorContainer);                                                                        \
+                        }                                                                                                                       \
+                    }                                                                                                                           \
+                }                                                                                                                               \
                 else
 
 void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);
         assert(FILE_NAME_OUTPUT != NULL);
 
-        printf("%s %s\n", FILE_NAME_INPUT, FILE_NAME_OUTPUT);
+        /*Max asm fubc name size*/
+        static const size_t MAX_FUNC_NAME_SIZE  = 10    ;
+        /*Max argument size (double can take up a lot of space)*/
+        static const size_t MAX_ARGUMENT_SIZE   = 300   ;
+        /*Start buffer size, if the size is not enough,
+        it is multiplied by a constant : Buffer multiplier*/
+        static const size_t START_BUFFER_SIZE   = 1000  ;
+        /*Buffer multiplier*/
+        static const size_t BUFFER_MULTIPLIER   = 2     ;
+        /*Buffer for reading the function name*/
+        static char asmfunc[MAX_FUNC_NAME_SIZE] = {}    ;
 
         size_t inbuffersize = 0;
         assert(fsize(FILE_NAME_INPUT, &inbuffersize) == FSIZE_SUCCES);
@@ -53,20 +59,15 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         size_t inbuffer_offset = 0;
         toupper_all(inbuffer);
         fclose(infile);
+        
 
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "wb");
 
         assert(outputfile != NULL);
-
-        static const size_t MAX_FUNC_NAME_SIZE = 10;
-        static const size_t MAX_ARGUMENT_SIZE = 300;
-        static char asmfunc[MAX_FUNC_NAME_SIZE] = {};
-
-        static const size_t START_BUFFER_SIZE = 1000;
-        size_t buffer_size = START_BUFFER_SIZE;
-
-        char* buffer = (char*) calloc(buffer_size, sizeof(char));
-        size_t buffer_offset = 0;
+        
+        size_t  buffer_size = START_BUFFER_SIZE;
+        char*   buffer = (char*) calloc(buffer_size, sizeof(char));
+        size_t  buffer_offset = 0;
 
         int asm_offset = 0;
         while(sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF){
@@ -76,12 +77,11 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
             static char argument[MAX_ARGUMENT_SIZE] = {};
 
             if(buffer_offset + sizeof(ProcessorContainer) * 4 >= buffer_size){
-                void* new_data = recalloc(buffer, buffer_size * 2, sizeof(char), buffer_size, sizeof(char));
+                void* new_data = recalloc(buffer, buffer_size * BUFFER_MULTIPLIER, sizeof(char), buffer_size, sizeof(char));
                 assert(new_data != NULL);
-                buffer_size *= 2;
+                buffer_size *= BUFFER_MULTIPLIER;
                 buffer = (char*)new_data;
             }
-            printf("asmfunc = %s\n", asmfunc);
             #include "../GlobalHeaders/DSL.h"
             /*else*/ void(0);
     }

@@ -1466,33 +1466,21 @@ extern void __assert (const char *__assertion, const char *__file, int __line)
 # 1 "/usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h" 1 3 4
 # 5 "../GlobalHeaders/asm.h" 2
 
-
+ 
 # 6 "../GlobalHeaders/asm.h"
-static const char PUSH_S[] = "push" ;
-static const char POP_S [] = "pop" ;
-static const char IN_S [] = "in" ;
-static const char ADD_S [] = "add" ;
-static const char SUB_S [] = "sub" ;
-static const char MUL_S [] = "mul" ;
-static const char DIV_S [] = "div" ;
-static const char SQRT_S[] = "sqrt" ;
-static const char SIN_S [] = "sin" ;
-static const char COS_S [] = "cos" ;
-static const char OUT_S [] = "out" ;
-static const char HLT_S [] = "hlt" ;
+const char PUSH_S[] = "push" ;
+ const char POP_S [] = "pop" ;
+ const char IN_S [] = "in" ;
+ const char ADD_S [] = "add" ;
+ const char SUB_S [] = "sub" ;
+ const char MUL_S [] = "mul" ;
+ const char DIV_S [] = "div" ;
+ const char SQRT_S[] = "sqrt" ;
+ const char SIN_S [] = "sin" ;
+ const char COS_S [] = "cos" ;
+ const char OUT_S [] = "out" ;
+ const char HLT_S [] = "hlt" ;
 
-static const size_t PUSH_N = 4;
-static const size_t POP_N = 3;
-static const size_t IN_N = 2;
-static const size_t ADD_N = 3;
-static const size_t SUB_N = 3;
-static const size_t MUL_N = 3;
-static const size_t DIV_N = 3;
-static const size_t SQRT_N = 4;
-static const size_t SIN_N = 3;
-static const size_t COS_N = 3;
-static const size_t OUT_N = 3;
-static const size_t HLT_N = 3;
 
 enum COMMANDCODS{
     SIGILL_\U00000421 = 0x0,
@@ -24112,93 +24100,123 @@ char* creacte_reg(long offset){
     reg[1] = (char)('a' + offset);
     return reg;
 }
-
+# 27 "Disassembler.cpp"
 void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         
-# 10 "Disassembler.cpp" 3 4
+# 28 "Disassembler.cpp" 3 4
        (static_cast <bool> (
-# 10 "Disassembler.cpp"
+# 28 "Disassembler.cpp"
        FILE_NAME_INPUT != 
-# 10 "Disassembler.cpp" 3 4
+# 28 "Disassembler.cpp" 3 4
        __null) ? void (0) : __assert_fail (
-# 10 "Disassembler.cpp"
+# 28 "Disassembler.cpp"
        "FILE_NAME_INPUT != NULL"
-# 10 "Disassembler.cpp" 3 4
-       , "Disassembler.cpp", 10, __extension__ __PRETTY_FUNCTION__))
-# 10 "Disassembler.cpp"
+# 28 "Disassembler.cpp" 3 4
+       , "Disassembler.cpp", 28, __extension__ __PRETTY_FUNCTION__))
+# 28 "Disassembler.cpp"
                                        ;
         
-# 11 "Disassembler.cpp" 3 4
+# 29 "Disassembler.cpp" 3 4
        (static_cast <bool> (
-# 11 "Disassembler.cpp"
+# 29 "Disassembler.cpp"
        FILE_NAME_OUTPUT != 
-# 11 "Disassembler.cpp" 3 4
+# 29 "Disassembler.cpp" 3 4
        __null) ? void (0) : __assert_fail (
-# 11 "Disassembler.cpp"
+# 29 "Disassembler.cpp"
        "FILE_NAME_OUTPUT != NULL"
-# 11 "Disassembler.cpp" 3 4
-       , "Disassembler.cpp", 11, __extension__ __PRETTY_FUNCTION__))
-# 11 "Disassembler.cpp"
+# 29 "Disassembler.cpp" 3 4
+       , "Disassembler.cpp", 29, __extension__ __PRETTY_FUNCTION__))
+# 29 "Disassembler.cpp"
                                        ;
 
         FILE* inputfile = fopen(FILE_NAME_INPUT, "rb");
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w");
 
         
-# 16 "Disassembler.cpp" 3 4
+# 34 "Disassembler.cpp" 3 4
        (static_cast <bool> (
-# 16 "Disassembler.cpp"
+# 34 "Disassembler.cpp"
        inputfile != 
-# 16 "Disassembler.cpp" 3 4
+# 34 "Disassembler.cpp" 3 4
        __null) ? void (0) : __assert_fail (
-# 16 "Disassembler.cpp"
+# 34 "Disassembler.cpp"
        "inputfile != NULL"
-# 16 "Disassembler.cpp" 3 4
-       , "Disassembler.cpp", 16, __extension__ __PRETTY_FUNCTION__))
-# 16 "Disassembler.cpp"
+# 34 "Disassembler.cpp" 3 4
+       , "Disassembler.cpp", 34, __extension__ __PRETTY_FUNCTION__))
+# 34 "Disassembler.cpp"
                                  ;
         
-# 17 "Disassembler.cpp" 3 4
+# 35 "Disassembler.cpp" 3 4
        (static_cast <bool> (
-# 17 "Disassembler.cpp"
+# 35 "Disassembler.cpp"
        outputfile != 
-# 17 "Disassembler.cpp" 3 4
+# 35 "Disassembler.cpp" 3 4
        __null) ? void (0) : __assert_fail (
-# 17 "Disassembler.cpp"
+# 35 "Disassembler.cpp"
        "outputfile != NULL"
-# 17 "Disassembler.cpp" 3 4
-       , "Disassembler.cpp", 17, __extension__ __PRETTY_FUNCTION__))
-# 17 "Disassembler.cpp"
+# 35 "Disassembler.cpp" 3 4
+       , "Disassembler.cpp", 35, __extension__ __PRETTY_FUNCTION__))
+# 35 "Disassembler.cpp"
                                  ;
 
         int64_t command = {};
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){
 
+            printf("command = %ld\n", command & 0x00000000FFFFFFFF);
             switch (command & 0x00000000FFFFFFFF){
-            case PUSH_C:{
-                double dubarg = 0;
-                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);
-                fprintf(outputfile,"%s %lg\n", PUSH_S, dubarg);
-                break;
-            }
-            case RPUSH_C:
-                fprintf(outputfile,"%s %s\n", PUSH_S, creacte_reg((command) >> 32));
-                break;
-            case RPOP_C:
-                fprintf(outputfile,"%s %s\n", PUSH_S, creacte_reg((command) >> 32));
-                break;
-            case IN_C:fprintf(outputfile,"%s\n", IN_S);break;;
-            case ADD_C:fprintf(outputfile,"%s\n", ADD_S);break;;
-            case SUB_C:fprintf(outputfile,"%s\n", SUB_S);break;;
-            case MUL_C:fprintf(outputfile,"%s\n", MUL_S);break;;
-            case DIV_C:fprintf(outputfile,"%s\n", DIV_S);break;;
-            case SQRT_C:fprintf(outputfile,"%s\n", SQRT_S);break;;
-            case SIN_C:fprintf(outputfile,"%s\n", SIN_S);break;;
-            case COS_C:fprintf(outputfile,"%s\n", COS_S);break;;
-            case OUT_C:fprintf(outputfile,"%s\n", OUT_S);break;;
-            case HLT_C:fprintf(outputfile,"%s\n", HLT_S);break;;
+# 1 "../GlobalHeaders/DSL.h" 1
+# 23 "../GlobalHeaders/DSL.h"
+case 0x11:{ if(1 == 0){ fprintf(outputfile,"%s\n", "RPUSH"); } else if(1 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "RPUSH", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "RPUSH", dubarg); } } break; }
+
+
+
+
+
+
+case 0x21:{ if(1 == 0){ fprintf(outputfile,"%s\n", "PUSH"); } else if(1 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "PUSH", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "PUSH", dubarg); } } break; }
+
+
+
+case 0x2B:{ if(1 == 0){ fprintf(outputfile,"%s\n", "RPOP"); } else if(1 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "RPOP", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "RPOP", dubarg); } } break; }
+
+
+
+
+case 0x35:{ if(1 == 0){ fprintf(outputfile,"%s\n", "POP"); } else if(1 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "POP", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "POP", dubarg); } } break; }
+
+
+case 54:{ if(0 == 0){ fprintf(outputfile,"%s\n", "IN"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "IN", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "IN", dubarg); } } break; }
+
+
+case 55:{ if(0 == 0){ fprintf(outputfile,"%s\n", "ADD"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "ADD", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "ADD", dubarg); } } break; }
+
+
+case 56:{ if(0 == 0){ fprintf(outputfile,"%s\n", "SUB"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "SUB", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "SUB", dubarg); } } break; }
+
+
+case 57:{ if(0 == 0){ fprintf(outputfile,"%s\n", "MUL"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "MUL", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "MUL", dubarg); } } break; }
+
+
+case 58:{ if(0 == 0){ fprintf(outputfile,"%s\n", "DIV"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "DIV", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "DIV", dubarg); } } break; }
+
+
+case 59:{ if(0 == 0){ fprintf(outputfile,"%s\n", "SQRT"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "SQRT", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "SQRT", dubarg); } } break; }
+
+
+case 60:{ if(0 == 0){ fprintf(outputfile,"%s\n", "SIN"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "SIN", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "SIN", dubarg); } } break; }
+
+
+case 61:{ if(0 == 0){ fprintf(outputfile,"%s\n", "COS"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "COS", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "COS", dubarg); } } break; }
+
+
+case 62:{ if(0 == 0){ fprintf(outputfile,"%s\n", "OUT"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "OUT", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "OUT", dubarg); } } break; }
+
+
+case 63:{ if(0 == 0){ fprintf(outputfile,"%s\n", "HLT"); } else if(0 == 1){ if(((command) >> 32) == 0){ fprintf(outputfile,"%s %s\n", "HLT", creacte_reg((command) >> 32)); } else { double dubarg = 0; fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile); fprintf(outputfile,"%s %lg\n", "HLT", dubarg); } } break; }
+# 44 "Disassembler.cpp" 2
             default:
+                printf("Incorrect Instuction!\n");
                 break;
             }
     }

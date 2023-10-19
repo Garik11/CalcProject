@@ -17,26 +17,25 @@ enum COMMANDCODS{
     HLT_C
 };*/
 
-#define NULL_REG
-#define NULL_REG_C 0
+#define NULL_REG 0
 
 DEF_CMD(RPUSH   ,   NULL_REG, 0x11  ,   1, {
-            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
+            int64_t R_STATUS = ((nowcode & MASK_REG) >> 32) - 1;
             printf("%ld\n", R_STATUS);
             assert(R_STATUS < 4);
             printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
             DO_PUSH(pr.stk, pr.reg[R_STATUS]);
 })
-DEF_CMD(PUSH    ,   RPUSH   , 0x21  ,   1, {
+DEF_CMD(PUSH    ,   0x11   , 0x21  ,   1, {
             printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
             DO_PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
 })
 DEF_CMD(RPOP    ,   NULL_REG, 0x2B  ,   1, {
-            int64_t R_STATUS = (nowcode & MASK_R) >> 32;
+            int64_t R_STATUS = ((nowcode & MASK_REG) >> 32) - 1;
             assert(R_STATUS < 4);
             pr.reg[R_STATUS] = DO_POP(pr.stk);
 })
-DEF_CMD(POP     ,   RPOP    , 0x35  ,   1, {
+DEF_CMD(POP     ,   0x2B    , 0x35  ,   1, {
     DO_POP(pr.stk);
 })
 DEF_CMD(IN      ,   NULL_REG, 54    ,   0, {
@@ -67,7 +66,7 @@ DEF_CMD(OUT     ,   NULL_REG, 62    ,   0, {
     DO_OUT(pr.stk);
 })
 DEF_CMD(HLT     ,   NULL_REG, 63    ,   0, {
-    break;
+    goto HLT;
 })
 
 #undef DEF_CMD

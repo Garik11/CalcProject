@@ -1,16 +1,16 @@
 #include "Processor.h"
 
-static inline double DO_POP    (Stack* stk);
-static inline void DO_PUSH     (Stack* stk, double value);
-static inline void DO_ADD      (Stack* stk);
-static inline void DO_DIV      (Stack* stk);
-static inline void DO_SUB      (Stack* stk);
-static inline void DO_MUL      (Stack* stk);
-static inline void DO_SIN      (Stack* stk);
-static inline void DO_COS      (Stack* stk);
-static inline void DO_SQRT     (Stack* stk);
-static inline void DO_OUT      (Stack* stk);
-static inline void DO_IN       (Stack* stk);
+static inline double    DO_POP      (Stack* stk);
+static inline void      DO_PUSH     (Stack* stk, double value);
+static inline void      DO_ADD      (Stack* stk);
+static inline void      DO_DIV      (Stack* stk);
+static inline void      DO_SUB      (Stack* stk);
+static inline void      DO_MUL      (Stack* stk);
+static inline void      DO_SIN      (Stack* stk);
+static inline void      DO_COS      (Stack* stk);
+static inline void      DO_SQRT     (Stack* stk);
+static inline void      DO_OUT      (Stack* stk);
+static inline void      DO_IN       (Stack* stk);
 
 ProcStruct ProcessorCtor (const char* FILE_NAME){
     ProcStruct outproc = {};
@@ -146,7 +146,7 @@ void ProcessorDump(     ProcStruct      procs       ,
 }
 
 #define DEF_CMD(name, rname, num, args, ...)\
-    case name##_C:                          \
+    case num:                               \
         __VA_ARGS__                         \
         break;                              
 
@@ -159,7 +159,7 @@ void processor(const char* FILE_NAME){
 
     while(pr.ip < IP_MAX){
 
-        int64_t nowcode = ((int64_t*)pr.code)[pr.ip++];
+        ProcessorContainer nowcode = ((ProcessorContainer*)pr.code)[pr.ip++];
 
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
@@ -167,7 +167,7 @@ void processor(const char* FILE_NAME){
         switch (nowcode & MASK_CODE){
             #include "../GlobalHeaders/DSL.h"
             default /*SIGILL_C*/:
-                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((int64_t*)(pr.code))[pr.ip++]);
+                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((ProcessorContainer*)(pr.code))[pr.ip++]);
                 goto HLT;
         }
     }
