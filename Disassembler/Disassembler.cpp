@@ -3,8 +3,6 @@
 char* creacte_reg(long offset){
     static char reg[] = "R&X";
     reg[1] = (char)('A' + offset);
-        printf("offset = %ld, reg = %s\n", offset, reg);
-
     return reg;
 }
 

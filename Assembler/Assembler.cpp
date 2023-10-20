@@ -15,9 +15,8 @@ void toupper_all(char *str){
                     else if(args == 1){                                                                                                         \
                         sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                                                      \
                         inbuffer_offset += (size_t)asm_offset;                                                                                  \
-                        printf("YA TYT %d\n", args);                                                                                            \
                         if(*argument == 'R'){                                                                                                   \
-                            ProcessorContainer spucommand = (((*(argument + 1) - 'A' + REG_OFFSET)) << REG_BITS) | rname;   \
+                            ProcessorContainer spucommand = (((*(argument + 1) - 'A' + REG_OFFSET)) << REG_BITS) | rname;                       \
                             memcpy((void*)(buffer + buffer_offset), &spucommand, sizeof(ProcessorContainer));                                   \
                             buffer_offset += sizeof(ProcessorContainer);                                                                        \
                         }                                                                                                                       \
@@ -48,18 +47,29 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         static const size_t BUFFER_MULTIPLIER   = 2     ;
         /*Buffer for reading the function name*/
         static char asmfunc[MAX_FUNC_NAME_SIZE] = {}    ;
-
+        /*INACCURACY of buffer size for mult*/
+        static const size_t INACCURACY = 4;
+        /*the extra byte for the last character*/
+        static const size_t EXTRA_BYTE = 1;
+        /*Size of input buffer*/
         size_t inbuffersize = 0;
-        assert(fsize(FILE_NAME_INPUT, &inbuffersize) == FSIZE_SUCCES);
-        char* inbuffer = (char*)calloc(sizeof(char), inbuffersize + 2);
+
+        size_t fsize_status = fsize(FILE_NAME_INPUT, &inbuffersize);
+        assert(fsize_status == FSIZE_SUCCES);
+
+        char* inbuffer = (char*)calloc(sizeof(char), inbuffersize + EXTRA_BYTE);
         assert(inbuffer != NULL);
+
         FILE* infile = fopen(FILE_NAME_INPUT, "r");
         assert(infile != NULL);
-        assert(fread(inbuffer, inbuffersize, sizeof(char), infile) == FREAD_SUCCES);
+
+        size_t fread_size = fread(inbuffer, inbuffersize, sizeof(char), infile);
+        assert(fread_size == FREAD_SUCCES);
+
+        /**/
         size_t inbuffer_offset = 0;
         toupper_all(inbuffer);
         fclose(infile);
-        
 
         FILE* outputfile = fopen(FILE_NAME_OUTPUT, "wb");
 
@@ -71,12 +81,20 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
 
         int asm_offset = 0;
         while(sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF){
-            
+
             inbuffer_offset += (size_t)asm_offset;
+            
+            /*processing comments*/
+            if(*asmfunc == ';'){
+                while(  *(inbuffer + inbuffer_offset) != '\n' && 
+                        *(inbuffer + inbuffer_offset) != 0)
+                    inbuffer_offset++;
+                continue;
+            }
 
             static char argument[MAX_ARGUMENT_SIZE] = {};
 
-            if(buffer_offset + sizeof(ProcessorContainer) * 4 >= buffer_size){
+            if(buffer_offset + sizeof(ProcessorContainer) * INACCURACY >= buffer_size){
                 void* new_data = recalloc(buffer, buffer_size * BUFFER_MULTIPLIER, sizeof(char), buffer_size, sizeof(char));
                 assert(new_data != NULL);
                 buffer_size *= BUFFER_MULTIPLIER;

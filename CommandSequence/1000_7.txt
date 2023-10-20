@@ -1,9 +1,9 @@
-push 3000
-push 3
-div
-push 700
-push 100
-div
-sub
-out
-hlt
+push 3000   ; push 3000
+push 3      ; push 3
+div         ; 3000 / 3 = 1000
+push 700    ; push 700
+push 100    ; push 100
+div         ; 700 / 100 = 7
+sub         ; 1000 - 7 = 993
+out         ; out 993
+hlt         ; exit
