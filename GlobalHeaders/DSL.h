@@ -17,7 +17,16 @@ enum COMMANDCODS{
     HLT_C
 };*/
 
+//0000000000000000BBBB-MIRCCCCCCCC
+
+/*
+MASK_REG_FLAG = 1 << 8;
+CMD_PUSH = 0xDED;
+CMD_PUSH | MASK_REG_FLAG;
+*/
+
 #define NULL_REG 0
+#define ONE_REG  1   
 
 DEF_CMD(RPUSH   ,   NULL_REG, 0x11  ,   1, {
             int64_t R_STATUS = ((nowcode & MASK_REG) >> 32) - 1;
@@ -67,6 +76,9 @@ DEF_CMD(OUT     ,   NULL_REG, 62    ,   0, {
 })
 DEF_CMD(HLT     ,   NULL_REG, 63    ,   0, {
     goto HLT;
+})
+DEF_CMD(JMP     ,   NULL_REG, 64     ,   1, {
+    pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip++];
 })
 
 #undef DEF_CMD

@@ -90,15 +90,15 @@ void ProcessorDump(     ProcStruct      procs       ,
     else
         printf("Procs \?\?\? called from \?\?\?(\?\?\?) in \?\?\?\n");
 
-    printf("code_size   = %lu\n", procs.code_size);
-    printf("ip          = %lu\n", procs.ip);
+    printf("\tcode_size   = %lu\n", procs.code_size);
+    printf("\tip          = %lu\n", procs.ip);
 
-    printf("{\n");
-    printf("rax = ""%" "lf" "\n", procs.reg[0]);
-    printf("rbx = ""%" "lf" "\n", procs.reg[1]);
-    printf("rcx = ""%" "lf" "\n", procs.reg[2]);
-    printf("rdx = ""%" "lf" "\n", procs.reg[3]);
-    printf("}\n");
+    printf("\t{\n");
+    printf("\t\trax = ""%" "lf" "\n", procs.reg[0]);
+    printf("\t\trbx = ""%" "lf" "\n", procs.reg[1]);
+    printf("\t\trcx = ""%" "lf" "\n", procs.reg[2]);
+    printf("\t\trdx = ""%" "lf" "\n", procs.reg[3]);
+    printf("\t}\n");
 
     if(procs.code_size <= procs.ip)
         printf("IP pos error! ip = %lu\n", procs.ip);
@@ -145,6 +145,8 @@ void ProcessorDump(     ProcStruct      procs       ,
     assert(FUNC_NAME != NULL);
 }
 
+
+// move near switch, then undef
 #define DEF_CMD(name, rname, num, args, ...)\
     case num:                               \
         __VA_ARGS__                         \
@@ -172,7 +174,7 @@ void processor(const char* FILE_NAME){
         }
     }
     HLT:
-        void(0);
+        void(0);//del
 
     PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
