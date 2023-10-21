@@ -1,3 +1,4 @@
+bad:
 in
 pop rax
 in
@@ -14,12 +15,6 @@ mul
 mul
 sub
 out
-jmp met
-met:
-out
-jmp rel
-rel:
-out
-jmp xxx
-xxx:
+push 0
+jg bad
 hlt

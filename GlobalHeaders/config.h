@@ -28,6 +28,8 @@
     
     static const int64_t ONE_VALUE      = 1     ;
 
+    static const double epsilan = 0.0000001;
+
 
 typedef uint64_t    ProcessorError;
 

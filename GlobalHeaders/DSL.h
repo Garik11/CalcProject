@@ -85,8 +85,34 @@ DEF_CMD(HLT, 63    ,   0, {
     printf("HLT DO\n");
     goto HLT;
 })
+
 DEF_CMD(JMP, 64     ,   1, {
     pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JE, 65     ,   1, {
+    if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) < epsilan)
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JNE, 66     ,   1, {
+    if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) > epsilan)
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JG, 67     ,   1, {
+    if(DO_POP(pr.stk) > DO_POP(pr.stk))
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JGE, 68     ,   1, {
+    if(DO_POP(pr.stk) >= DO_POP(pr.stk))
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JL, 69     ,   1, {
+    printf("TYTE VIZOF JL\n");
+    if(DO_POP(pr.stk) < DO_POP(pr.stk))
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(JLE, 70     ,   1, {
+    if(DO_POP(pr.stk) <= DO_POP(pr.stk))
+        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
 })
 
 #undef DEF_CMD
