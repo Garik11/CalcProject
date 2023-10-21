@@ -15,10 +15,14 @@ static inline void      DO_IN       (Stack* stk);
 ProcStruct ProcessorCtor (const char* FILE_NAME){
     ProcStruct outproc = {};
 
-    outproc.reg[0] = outproc.reg[1] = outproc.reg[2] = outproc.reg[3] = 0;
+    memset(&outproc.reg, 0, NUMBER_OF_REGISTERS * sizeof(ProcessorArgumentType));
 
     outproc.ip          = IP_START_POS      ;
     outproc.code_size   = CODE_START_SIZE   ;
+
+    outproc.MEM = (char*)calloc(PROC_MEM_SIZE, sizeof(char));
+    assert(outproc.MEM != NULL);
+
     ProcessorGetCode(&outproc, FILE_NAME);
 
     StackErrorsBitmask stackerror = STACK_ALL_OK;
@@ -27,17 +31,18 @@ ProcStruct ProcessorCtor (const char* FILE_NAME){
 
     outproc.call_stk = STACK_CTOR(&stackerror);
     assert(stackerror == STACK_ALL_OK);
-    StackPush(outproc.call_stk, 1000);
 
     return outproc;
 }
 
 void ProcessorDtor(ProcStruct procs){
     assert(procs.code != NULL);
-    free(procs.code);
+    free(procs.code - sizeof(AUTHORS_NAME) - sizeof(VERSION));
+    free(procs.MEM);
     procs.ip        = PROC_POISON_HEX_NUM;
     procs.code_size = PROC_POISON_HEX_NUM;
-    procs.reg[0] = procs.reg[1] = procs.reg[2] = procs.reg[3] = PROC_POISON_NUM;
+    for(size_t i = 0; i < NUMBER_OF_REGISTERS; i++)
+        procs.reg[i] = PROC_POISON_NUM;
     StackDtor(procs.stk);
     StackDtor(procs.call_stk);
 }
@@ -45,7 +50,6 @@ void ProcessorDtor(ProcStruct procs){
 void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
 
     assert(FILE_NAME != NULL);
-    printf("%s \n", FILE_NAME);
 
     size_t file_size = {};
     assert(fsize(FILE_NAME, &file_size) == FSIZE_SUCCES);
@@ -56,6 +60,19 @@ void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
     FILE* fp = fopen(FILE_NAME, "rb");
     assert(fp != NULL);
     assert(fread(procs->code, file_size, sizeof(ProcessorContainer), fp) == FREAD_SUCCES);
+
+    int file_ownership = strncmp(procs->code, AUTHORS_NAME, sizeof(AUTHORS_NAME));
+    if(file_ownership != 0){
+        printf("Incorrect author %s %s!\n", AUTHORS_NAME, procs->code);
+        assert(file_ownership == 0);
+    }
+    procs->code += sizeof(AUTHORS_NAME);
+    int file_versionship = strncmp(procs->code, VERSION, sizeof(VERSION));
+    if(file_versionship != 0){
+        printf("Incorrect version %s %s\n", AUTHORS_NAME, procs->code);
+        assert(file_versionship == 0);
+    }
+    procs->code += sizeof(VERSION);
 
     fclose(fp);
 }
@@ -137,7 +154,12 @@ void ProcessorDump(     ProcStruct      procs       ,
                 printf("^^^^\n");
             }
         }
-
+        if(procs.MEM != NULL){
+            printf("MEM: ");
+            for(size_t i = 0; i < PROC_MEM_SIZE / sizeof(ProcessorArgumentType); i++)
+                printf("%.2lg ", *(ProcessorArgumentType*)((procs.MEM + i * sizeof(ProcessorArgumentType))));
+            putchar('\n');
+        }
         printf("}\n");
     }
     
@@ -155,7 +177,7 @@ void ProcessorDump(     ProcStruct      procs       ,
 #define DEF_CMD(name, num, args, ...)       \
     case num:                               \
         __VA_ARGS__                         \
-        break;                              \   
+        break;                                
 
 void processor(const char* FILE_NAME){
     assert(FILE_NAME != NULL);
@@ -166,8 +188,8 @@ void processor(const char* FILE_NAME){
 
     while(pr.ip < IP_MAX){
 
-        ProcessorContainer nowcode = ((ProcessorContainer*)pr.code)[pr.ip++];
-
+        ProcessorContainer nowcode = ((ProcessorContainer*)pr.code)[pr.ip];
+        pr.ip++;
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
 

@@ -1,0 +1,17 @@
+in
+call fact
+out
+hlt
+fact:
+    pop rax     ; rax = pop
+    push rax    ;
+    push rax
+    push 1
+    je
+        ret
+    push rax
+    push 1
+    sub
+    call fact
+    mul
+    ret

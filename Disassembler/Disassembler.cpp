@@ -43,6 +43,14 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
 
         ProcessorContainer command = {};
         size_t сounter_non_commands = 0;
+        
+        char authors_name   [sizeof(AUTHORS_NAME)   + 1] = {};
+        assert(fread(authors_name, sizeof(AUTHORS_NAME), 1, inputfile) == FREAD_SUCCES);
+        char version        [sizeof(VERSION)        + 1] = {};
+        assert(fread(version, sizeof(VERSION), 1, inputfile) == FREAD_SUCCES);
+
+        printf("Author's name:%s, version:%s\n", authors_name, version);
+        printf("Disassembling...\n");
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){
             switch (command & MASK_CODE){
@@ -55,4 +63,5 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
 
     fclose(inputfile );
     fclose(outputfile);
+    printf("Disassembling successfully!\n");
 }

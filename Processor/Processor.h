@@ -24,6 +24,8 @@ struct ProcStruct
     size_t  ip;
 
     Stack *call_stk;
+
+    char* MEM;
 };
 
 enum PROCESS_ERRORS{
@@ -40,7 +42,8 @@ void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME);
 void ProcessortOutAllErrors(ProcessorError  errors);
 
 ProcessorError  ProcessorVerificator(ProcStruct procs);
-void            ProcessorDump       (   ProcStruct      procs       , 
+void            ProcessorDump       (   
+                                        ProcStruct      procs       , 
                                         ProcessorError  errors      , 
                                         const char*     PROCS_NAME  ,
                                         const char*     FILE        , 
