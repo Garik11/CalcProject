@@ -114,6 +114,16 @@ DEF_CMD(JLE, 70     ,   1, {
     if(DO_POP(pr.stk) <= DO_POP(pr.stk))
         pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
 })
+DEF_CMD(CALL, 71     ,   1, {
+    DO_PUSH(pr.call_stk, (double)(pr.ip + 1));
+    pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+})
+DEF_CMD(RET, 72     ,   1, {
+    pr.ip = (size_t)DO_POP(pr.call_stk);
+})
+
+//JG JL JLE JGE для них первый элемент - верхний
+// Stack - ret register
 
 #undef DEF_CMD
 #undef NULL_REG

@@ -62,6 +62,7 @@ void argument_determinant(char *pointer_to_write, size_t *offset, int64_t byteco
         else if (args == 1)                                                                    \
         {                                                                                      \
             /* TODO move to function */                                                        \
+            printf("TET ERROR\n");                                                              \
             sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                 \
             inbuffer_offset += (size_t)asm_offset;                                             \
             argument_determinant(                                                              \
@@ -85,7 +86,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     assert(FILE_NAME_OUTPUT != NULL);
 
     /*Max asm fubc name size*/
-    static const size_t MAX_FUNC_NAME_SIZE = 10;
+    static const size_t MAX_FUNC_NAME_SIZE = 30;
     /*Max argument size (double can take up a lot of space)*/
     static const size_t MAX_ARGUMENT_SIZE = 300;
     /*Start buffer size, if the size is not enough,
@@ -137,9 +138,10 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     int asm_offset = 0;
 
     size_t ip = 0;
-
+    printf("size = %lu\n", inbuffersize);
     while (sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF)
     {
+        printf("func = %s\n", asmfunc);
 
         inbuffer_offset += (size_t)asm_offset;
 
@@ -153,6 +155,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         }
         if (*(asmfunc + asm_offset - 2) == ':')
         {
+            
             strncpy(labels[labelspos].LABEL_NAME, asmfunc, (size_t)(asm_offset - 2));
             labels[labelspos].label_ip = ip + 1;
             labelspos++;
@@ -181,6 +184,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         }
 #include "../GlobalHeaders/DSL.h"
         /*else*/ void(0);
+        printf("inbuffer = %lu\n", inbuffer_offset);
     }
     printf("def size = %lu\n", labelspos);
     printf("undef size = %lu\n", undeflabelspos);

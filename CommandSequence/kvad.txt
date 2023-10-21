@@ -1,10 +1,13 @@
-bad:
 in
-pop rax
 in
+in
+call calculatediskr
+out
+hlt
+calculatediskr:
+pop rcx 
 pop rbx
-in
-pop rcx
+pop rax
 push rbx
 push rbx
 mul
@@ -14,7 +17,4 @@ push rcx
 mul
 mul
 sub
-out
-push 0
-jg bad
-hlt
+ret

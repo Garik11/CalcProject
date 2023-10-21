@@ -25,6 +25,10 @@ ProcStruct ProcessorCtor (const char* FILE_NAME){
     outproc.stk = STACK_CTOR(&stackerror);
     assert(stackerror == STACK_ALL_OK);
 
+    outproc.call_stk = STACK_CTOR(&stackerror);
+    assert(stackerror == STACK_ALL_OK);
+    StackPush(outproc.call_stk, 1000);
+
     return outproc;
 }
 
@@ -35,6 +39,7 @@ void ProcessorDtor(ProcStruct procs){
     procs.code_size = PROC_POISON_HEX_NUM;
     procs.reg[0] = procs.reg[1] = procs.reg[2] = procs.reg[3] = PROC_POISON_NUM;
     StackDtor(procs.stk);
+    StackDtor(procs.call_stk);
 }
 
 void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){

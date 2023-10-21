@@ -22,6 +22,8 @@ struct ProcStruct
     char*   code;
     size_t  code_size;
     size_t  ip;
+
+    Stack *call_stk;
 };
 
 enum PROCESS_ERRORS{
