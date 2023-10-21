@@ -16,12 +16,18 @@
     #define ProcesseorSpecificator "ld"
     #define SpecificatorSize        "4"
 
-    static const int64_t MASK_CODE      = (int64_t)0x00000000FFFFFFFF;
-    static const int64_t MASK_REG       = (int64_t)0xFFFFFFFF00000000;
+    static const int64_t REG_BITS       = 24    ;
 
-    static const int64_t REG_BITS       = 32    ;
-    static const int64_t REG_OFFSET     = 1     ;
+    static const int64_t MASK_CODE          = (int64_t)0x000000000000FFFF;
+    static const int64_t MASK_STATUS        = (int64_t)0x0000000000FF0000;
+    static const int64_t MASK_REG           = (int64_t)0x00000000FF000000;
+
+    static const int64_t REG_BIT = 1 << 16;
+    static const int64_t NUM_BIT = 1 << 17;
+    static const int64_t MEM_BIT = 1 << 18;
+    
     static const int64_t ONE_VALUE      = 1     ;
+
 
 typedef uint64_t    ProcessorError;
 

@@ -6,19 +6,26 @@ char* creacte_reg(long offset){
     return reg;
 }
 
-#define DEF_CMD(name, rname, num, args, ...)                                                            \
+#define DEF_CMD(name, num, args, ...)                                                                   \
     case num:{                                                                                          \
         if(args == 0){                                                                                  \
             fprintf(outputfile,"%s\n", #name);                                                          \
         }                                                                                               \
         else if(args == 1){                                                                             \
-            if((command >> REG_BITS) != 0){                                                             \
-                fprintf(outputfile,"%s %s\n",  #name, creacte_reg((command >> REG_BITS) - REG_OFFSET)); \
+            if(command & REG_BIT){                                                                      \
+                fprintf(outputfile,"%s %s\n",  #name, creacte_reg((command >> REG_BITS)));              \
             }                                                                                           \
-            else {                                                                                      \
+            else if(command & NUM_BIT){                                                                 \
                 double dubarg = 0;                                                                      \
+                сounter_non_commands++;                                                                 \
                 fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
                 fprintf(outputfile,"%s %lg\n",  #name, dubarg);                                         \
+            }                                                                                           \
+            else{                                                                                       \
+                ProcessorContainer dubarg = 0;                                                          \
+                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);                               \
+                dubarg -= (ProcessorContainer)сounter_non_commands;                                     \
+                fprintf(outputfile,"%s %"ProcesseorSpecificator"\n",  #name, dubarg);                   \
             }                                                                                           \
         }                                                                                               \
     }                                                                                                   \
@@ -35,12 +42,13 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(outputfile != NULL);
 
         ProcessorContainer command = {};
+        size_t сounter_non_commands = 0;
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){
             switch (command & MASK_CODE){
             #include "../GlobalHeaders/DSL.h"
             default:
-                printf("Incorrect Instuction!\n");
+                printf("Incorrect Instuction: %ld!\n", command & MASK_CODE);
                 break;
             }
     }

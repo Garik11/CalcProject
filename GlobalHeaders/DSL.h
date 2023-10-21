@@ -1,3 +1,4 @@
+
 /*
 enum COMMANDCODS{
     SIGILL_С    = 0x0,
@@ -18,6 +19,7 @@ enum COMMANDCODS{
 };*/
 
 //0000000000000000BBBB-MIRCCCCCCCC
+//                      -100000000
 
 /*
 MASK_REG_FLAG = 1 << 8;
@@ -28,57 +30,63 @@ CMD_PUSH | MASK_REG_FLAG;
 #define NULL_REG 0
 #define ONE_REG  1   
 
-DEF_CMD(RPUSH   ,   NULL_REG, 0x11  ,   1, {
-            int64_t R_STATUS = ((nowcode & MASK_REG) >> 32) - 1;
-            printf("%ld\n", R_STATUS);
-            assert(R_STATUS < 4);
-            printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
-            DO_PUSH(pr.stk, pr.reg[R_STATUS]);
+DEF_CMD(PUSH, 0x21  ,   1, {
+            if(nowcode & REG_BIT){
+                int64_t R_STATUS = ((nowcode & MASK_REG) >> REG_BITS);
+                printf("%ld\n", R_STATUS);
+                assert(R_STATUS < 4);
+                printf("PUSHED:%lf\n", pr.reg[R_STATUS]);
+                DO_PUSH(pr.stk, pr.reg[R_STATUS]);
+            }
+            else if(nowcode & NUM_BIT){
+                printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
+                DO_PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
+            }
 })
-DEF_CMD(PUSH    ,   0x11   , 0x21  ,   1, {
-            printf("PUSHED:%lf\n", ((double*)pr.code)[pr.ip]);
-            DO_PUSH(pr.stk, ((double*)pr.code)[pr.ip++]);
-})
-DEF_CMD(RPOP    ,   NULL_REG, 0x2B  ,   1, {
-            int64_t R_STATUS = ((nowcode & MASK_REG) >> 32) - 1;
+
+DEF_CMD(POP, 0x35  ,   1, {
+    if(nowcode & REG_BIT){
+            int64_t R_STATUS = ((nowcode & MASK_REG) >> REG_BITS);
             assert(R_STATUS < 4);
             pr.reg[R_STATUS] = DO_POP(pr.stk);
+    }
+    else if(nowcode & NUM_BIT){
+        DO_POP(pr.stk);
+    }
 })
-DEF_CMD(POP     ,   0x2B    , 0x35  ,   1, {
-    DO_POP(pr.stk);
-})
-DEF_CMD(IN      ,   NULL_REG, 54    ,   0, {
+DEF_CMD(IN, 54    ,   0, {
     DO_IN(pr.stk);
 })
-DEF_CMD(ADD     ,   NULL_REG, 55    ,   0, {
+DEF_CMD(ADD, 55    ,   0, {
     DO_ADD(pr.stk);
 })
-DEF_CMD(SUB     ,   NULL_REG, 56    ,   0, {
+DEF_CMD(SUB, 56    ,   0, {
     DO_SUB(pr.stk);
 })
-DEF_CMD(MUL     ,   NULL_REG, 57    ,   0, {
+DEF_CMD(MUL, 57    ,   0, {
     DO_MUL(pr.stk);
 })
-DEF_CMD(DIV     ,   NULL_REG, 58    ,   0, {
+DEF_CMD(DIV, 58    ,   0, {
     DO_DIV(pr.stk);
 })
-DEF_CMD(SQRT    ,   NULL_REG, 59    ,   0, {
+DEF_CMD(SQRT, 59    ,   0, {
     DO_SQRT(pr.stk);
 })
-DEF_CMD(SIN     ,   NULL_REG, 60    ,   0, {
+DEF_CMD(SIN, 60    ,   0, {
     DO_SIN(pr.stk);
 })
-DEF_CMD(COS     ,   NULL_REG, 61    ,   0, {
+DEF_CMD(COS, 61    ,   0, {
     DO_COS(pr.stk);
 })
-DEF_CMD(OUT     ,   NULL_REG, 62    ,   0, {
+DEF_CMD(OUT, 62    ,   0, {
     DO_OUT(pr.stk);
 })
-DEF_CMD(HLT     ,   NULL_REG, 63    ,   0, {
+DEF_CMD(HLT, 63    ,   0, {
+    printf("HLT DO\n");
     goto HLT;
 })
-DEF_CMD(JMP     ,   NULL_REG, 64     ,   1, {
-    pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip++];
+DEF_CMD(JMP, 64     ,   1, {
+    pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
 })
 
 #undef DEF_CMD

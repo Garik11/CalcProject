@@ -16,4 +16,17 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
 
 void toupper_all(char *str);
 
+struct Lashes
+{
+    char LABEL_NAME[100];
+    size_t label_ip;
+};
+
+struct UndefLashes
+{
+    char UNDEF_LABEL_NAME[100];
+    size_t UNDEF_BUFFER_POS;
+};
+
+
 #endif // !CALC_ASSEMBLER_H

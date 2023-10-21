@@ -1,4 +1,3 @@
-and:
 in
 pop rax
 in
@@ -15,6 +14,12 @@ mul
 mul
 sub
 out
-pop rax
-jmp and
+jmp met
+met:
+out
+jmp rel
+rel:
+out
+jmp xxx
+xxx:
 hlt

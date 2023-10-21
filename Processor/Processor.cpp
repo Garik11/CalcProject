@@ -147,10 +147,10 @@ void ProcessorDump(     ProcStruct      procs       ,
 
 
 // move near switch, then undef
-#define DEF_CMD(name, rname, num, args, ...)\
+#define DEF_CMD(name, num, args, ...)       \
     case num:                               \
         __VA_ARGS__                         \
-        break;                              
+        break;                              \   
 
 void processor(const char* FILE_NAME){
     assert(FILE_NAME != NULL);
@@ -165,6 +165,16 @@ void processor(const char* FILE_NAME){
 
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
+
+        int64_t b = nowcode;
+        while(b){
+            if(b & 1)
+                printf("1");
+            else
+                printf("0");
+            b >>= 1;
+        }
+        putchar('\n');
         
         switch (nowcode & MASK_CODE){
             #include "../GlobalHeaders/DSL.h"

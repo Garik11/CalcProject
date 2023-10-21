@@ -1,0 +1,7 @@
+IN
+IN
+MUL
+IN
+MUL
+OUT
+HLT

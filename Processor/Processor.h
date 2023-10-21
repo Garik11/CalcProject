@@ -13,8 +13,6 @@
 #define PROCESSOR_DUMP(procs, errors) ProcessorDump(procs, errors, #procs, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define print_error(error) printf("ERROR: %s!\n", #error);
 
-
-
 struct ProcStruct
 {
     Stack *stk;
