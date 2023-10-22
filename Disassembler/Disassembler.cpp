@@ -12,21 +12,30 @@ char* creacte_reg(long offset){
             fprintf(outputfile,"%s\n", #name);                                                          \
         }                                                                                               \
         else if(args == 1){                                                                             \
-            if(command & REG_BIT){                                                                      \
-                fprintf(outputfile,"%s %s\n",  #name, creacte_reg((command >> REG_BITS)));              \
+            fprintf(outputfile, "%s ", #name);                                                          \
+            if(command & MEM_BIT){                                                                      \
+                fprintf(outputfile, "%c", '[');                                                         \
             }                                                                                           \
-            else if(command & NUM_BIT){                                                                 \
+            if(command & REG_BIT){                                                                      \
+                fprintf(outputfile, "%s", creacte_reg((command >> REG_BITS)));                          \
+            }                                                                                           \
+            else if(command & NUM_BIT){         \
                 double dubarg = 0;                                                                      \
                 сounter_non_commands++;                                                                 \
                 fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
-                fprintf(outputfile,"%s %lg\n",  #name, dubarg);                                         \
+                fprintf(outputfile,"%lg", dubarg);                                                      \
             }                                                                                           \
-            else{                                                                                       \
+            else /*jmp mark*/{                                                                          \
                 ProcessorContainer dubarg = 0;                                                          \
-                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);                               \
+                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);\
                 dubarg -= (ProcessorContainer)сounter_non_commands;                                     \
-                fprintf(outputfile,"%s %"ProcesseorSpecificator"\n",  #name, dubarg);                   \
+                сounter_non_commands++;                                                                 \
+                fprintf(outputfile,"%ld", dubarg);                                                      \
             }                                                                                           \
+            if(command & MEM_BIT){                                                                      \
+                fprintf(outputfile, "%c", ']');                                                         \
+            }                                                                                           \
+            fprintf(outputfile, "\n");                                                                  \
         }                                                                                               \
     }                                                                                                   \
     break;                                                                                              \
@@ -49,7 +58,7 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         char version        [sizeof(VERSION)        + 1] = {};
         assert(fread(version, sizeof(VERSION), 1, inputfile) == FREAD_SUCCES);
 
-        printf("Author's name:%s, version:%s\n", authors_name, version);
+        printf("Author's name: %s, version:%s\n", authors_name, version);
         printf("Disassembling...\n");
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){

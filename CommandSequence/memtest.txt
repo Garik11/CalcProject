@@ -1,6 +1,8 @@
 push 10
-pop [5]
-push [5]
-push [5]
-push [5]
+pop rax
+push 5
+pop [rax]
+push [rax]
+push [rax]
+push [10]
 hlt

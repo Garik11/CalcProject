@@ -22,7 +22,6 @@ void argument_determinant(
     if (argument[0] == 'R' && argument[2] == 'X') /*if argument*/
     {
         spucommand = (((int64_t)((argument[1] - 'A'))) << REG_BITS) | (bytecode | REG_BIT);
-        printf("R command = %ld\n", spucommand);
         memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
         (*offset) += sizeof(ProcessorContainer);
     }
@@ -36,10 +35,8 @@ void argument_determinant(
         memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
         (*offset) += sizeof(ProcessorContainer);
     } else if((*argument) == '[' && *(argument + argument_size - 2) == ']'){
-        printf("ADD MEM[]\n");
         if(argument[1] == 'R' && argument[3] == 'X'){
             spucommand = (((int64_t)((argument[2] - 'A'))) << REG_BITS) | (bytecode | MEM_BIT | REG_BIT);
-            printf("REG SPU: %ld\n", spucommand);
             memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
             (*offset) += sizeof(ProcessorContainer);
         }
@@ -50,11 +47,11 @@ void argument_determinant(
             memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
             (*offset) += sizeof(ProcessorContainer);
             memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
+            (*offset) += sizeof(ProcessorContainer);
         }
     }
-    else /*if mark*/
+    else /*if jmp mark*/
     {
-        printf("YA USTAL\n");
         spucommand = bytecode;
         memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
         (*offset) += sizeof(ProcessorContainer);
@@ -62,6 +59,7 @@ void argument_determinant(
         undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*offset);
         (*undeflabelspos)++;
         (*offset) += sizeof(ProcessorContainer);
+        (*ip)++;
     }
 }
 
@@ -77,7 +75,6 @@ void argument_determinant(
         else if (args == 1)                                                                         \
         {                                                                                           \
             /* TODO move to function */                                                             \
-            printf("TET ERROR\n");                                                                  \
             sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                      \
             inbuffer_offset += (size_t)asm_offset;                                                  \
             argument_determinant(                                                                   \
@@ -145,7 +142,6 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
 
     while (sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF)
     {
-        printf("func = %s\n", asmfunc);
 
         inbuffer_offset += (size_t)asm_offset;
 
@@ -160,9 +156,8 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         /*processing marks*/
         if (*(asmfunc + asm_offset - 2) == ':')
         {
-             printf("IDI NAHUI\n");
             strncpy(labels[labelspos].LABEL_NAME, asmfunc, (size_t)(asm_offset - 2));
-            labels[labelspos].label_ip = ip + 1;
+            labels[labelspos].label_ip = ip;
             labelspos++;
             continue;
         }
@@ -184,22 +179,17 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         #include "../GlobalHeaders/DSL.h"
         /*else*/ void(0);
     }
-    printf("def size = %lu\n", labelspos);
-    printf("undef size = %lu\n", undeflabelspos);
     for (size_t udpos = 0; udpos < undeflabelspos; udpos++)
     {
         for (size_t dpos = 0; dpos < labelspos; dpos++)
         {
-            printf("undef = %s, def = %s names\n", undeflabels[udpos].UNDEF_LABEL_NAME, labels[dpos].LABEL_NAME);
             if (strcmp(undeflabels[udpos].UNDEF_LABEL_NAME, labels[dpos].LABEL_NAME) == 0)
             {
-                printf("Writed ip:%lu\n", labels[dpos].label_ip);
                 memcpy((void *)(outbuffer + undeflabels[udpos].UNDEF_BUFFER_POS), &labels[dpos].label_ip, sizeof(size_t));
                 break;
             }
             else if (dpos == labelspos - 1)
             {
-                printf("Bad label %s!\n", undeflabels[udpos].UNDEF_LABEL_NAME);
                 exit(-1);
             }
         }

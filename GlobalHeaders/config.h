@@ -4,7 +4,7 @@
     #include <stddef.h>
 
     static const char AUTHORS_NAME  [] = "KXI";
-    static const char VERSION       [] = "1.0.2";
+    static const char VERSION       [] = "1.0";
 
     static const size_t CODE_START_SIZE = 1000;
     static const size_t IP_START_POS = 0;
@@ -36,7 +36,8 @@
 
     static const double epsilan     = 0.0000001;
 
-    static const size_t PROC_MEM_SIZE = 10000;
+    /*MEM SIZE. Must be the square of the number*/
+    static const size_t PROC_MEM_SIZE = 256 * sizeof(ProcessorArgumentType);
 
 
     typedef uint64_t    ProcessorError;

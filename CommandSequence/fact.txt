@@ -3,15 +3,22 @@ call fact
 out
 hlt
 fact:
-    pop rax     ; rax = pop
-    push rax    ;
+    pop rax
+    push rax
+    push rax
+    push 0
+    jge nullout
     push rax
     push 1
-    je
-        ret
+    je out
     push rax
     push 1
     sub
     call fact
     mul
+out:
+    ret
+nullout:
+    pop rax
+    push 1
     ret

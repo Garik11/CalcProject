@@ -1,0 +1,19 @@
+push 10
+push 79
+push 76
+push 76
+push 69
+push 72
+pop rax
+outc rax
+pop rax
+outc rax
+pop rax
+outc rax
+pop rax
+outc rax
+pop rax
+outc rax
+pop rax
+outc rax
+hlt

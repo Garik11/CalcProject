@@ -145,8 +145,12 @@ void ProcessorDump(     ProcStruct      procs       ,
             for(size_t pos = 0; pos < procs.ip + 10; pos++)
                 printf("%"SpecificatorSize"lu ", pos);
             putchar('\n');
-            for(size_t pos = 0; pos < procs.ip + 10; pos++)
-                printf("%" SpecificatorSize ProcesseorSpecificator " ", ((ProcessorContainer*)procs.code)[pos] & MASK_CODE);
+            for(size_t pos = 0; pos < procs.ip + 10; pos++){
+                ProcessorContainer out = {};
+                memcpy(&out, procs.code + pos * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
+                out &= MASK_CODE;
+                printf("%" SpecificatorSize ProcesseorSpecificator " ", out);
+            }
             putchar('\n');
             if(procs.code_size > procs.ip){
                 for(size_t pos = 0; pos < procs.ip; pos++)
@@ -155,10 +159,15 @@ void ProcessorDump(     ProcStruct      procs       ,
             }
         }
         if(procs.MEM != NULL){
-            printf("MEM: ");
-            for(size_t i = 0; i < PROC_MEM_SIZE / sizeof(ProcessorArgumentType); i++)
-                printf("%.2lg ", *(ProcessorArgumentType*)((procs.MEM + i * sizeof(ProcessorArgumentType))));
-            putchar('\n');
+            printf("MEM: \n");
+            size_t memside = sqrt(PROC_MEM_SIZE / sizeof(ProcessorArgumentType));
+            for(size_t i = 0; i < memside; i++){
+                putchar('\t');
+                for(size_t j = 0; j < memside; j++){
+                    printf("%.2lg ", *(ProcessorArgumentType*)((procs.MEM + (i * memside + j) * sizeof(ProcessorArgumentType))));
+                }
+                putchar('\n');
+            }
         }
         printf("}\n");
     }
@@ -188,11 +197,13 @@ void processor(const char* FILE_NAME){
 
     while(pr.ip < IP_MAX){
 
-        ProcessorContainer nowcode = ((ProcessorContainer*)pr.code)[pr.ip];
-        pr.ip++;
-        printf("NOW INST: %ld \n", nowcode & MASK_CODE);
-        PROCESSOR_DUMP(pr, PROC_ALL_OK);
+        ProcessorContainer nowcode = {};
+        memcpy(&nowcode, pr.code + pr.ip * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
 
+        pr.ip++;
+        //printf("NOW INST: %ld \n", nowcode & MASK_CODE);
+        //PROCESSOR_DUMP(pr, PROC_ALL_OK);
+        /*
         int64_t b = nowcode;
         while(b){
             if(b & 1)
@@ -200,20 +211,19 @@ void processor(const char* FILE_NAME){
             else
                 printf("0");
             b >>= 1;
-        }
-        putchar('\n');
-        
+        }*/
+        //putchar('\n');
         switch (nowcode & MASK_CODE){
             #include "../GlobalHeaders/DSL.h"
             default /*SIGILL_C*/:
-                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", ((ProcessorContainer*)(pr.code))[pr.ip++]);
+                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", nowcode & MASK_CODE);
                 goto HLT;
         }
     }
     HLT:
         void(0);//del
 
-    PROCESSOR_DUMP(pr, PROC_ALL_OK);
+    //PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
     ProcessorDtor(pr);
 }

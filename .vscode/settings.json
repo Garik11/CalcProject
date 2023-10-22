@@ -2,6 +2,7 @@
     "files.associations": {
         "type_traits": "cpp",
         "typeinfo": "cpp",
-        "compare": "cpp"
+        "compare": "cpp",
+        "cmath": "cpp"
     }
 }
