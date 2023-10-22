@@ -10,22 +10,30 @@
 #include "../FileWork/TextReadFile.h"
 #include "../GlobalHeaders/config.h"
 
-#define PROCESSOR_DUMP(procs, errors) ProcessorDump(procs, errors, #procs, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define PROCESSOR_DUMP(procs, errors) ProcessorDump (                           \
+                                                        procs               ,   \
+                                                        errors              ,   \
+                                                        #procs              ,   \
+                                                        __FILE__            ,   \
+                                                        __LINE__            ,   \
+                                                        __PRETTY_FUNCTION__     \
+                                                    )
+
 #define print_error(error) printf("ERROR: %s!\n", #error);
 
 struct ProcStruct
 {
-    Stack *stk;
+    Stack *stk          ;
 
-    ProcessorArgumentType reg[4];
+    ProcessorArgumentType reg[NUMBER_OF_REGISTERS];
 
-    char*   code;
-    size_t  code_size;
-    size_t  ip;
+    char*   code        ;
+    size_t  code_size   ;
+    size_t  ip          ;
 
-    Stack *call_stk;
+    Stack *call_stk     ;
 
-    char* MEM;
+    char* MEM           ;
 };
 
 enum PROCESS_ERRORS{
@@ -36,7 +44,7 @@ enum PROCESS_ERRORS{
 };
 
 ProcStruct      ProcessorCtor       (const char* FILE_NAME);
-void            ProcessorDtor       (ProcStruct procs);
+void            ProcessorDtor       (ProcStruct  procs);
 void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME);
 
 void ProcessortOutAllErrors(ProcessorError  errors);

@@ -27,9 +27,9 @@ void argument_determinant(
     }
     else if (isdigit(*argument)) /*if num*/
     {
-        spucommand = bytecode | NUM_BIT;
         (*ip)++;
-        double value = atof(argument);
+        spucommand = bytecode | NUM_BIT;
+        ProcessorArgumentType value = atof(argument);
         memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
         (*offset) += sizeof(ProcessorContainer);
         memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
@@ -41,9 +41,9 @@ void argument_determinant(
             (*offset) += sizeof(ProcessorContainer);
         }
         else {
-            spucommand = bytecode | MEM_BIT | NUM_BIT;
             (*ip)++;
-            double value = atof(argument + ONE_SYMBOL_SKIP);
+            spucommand = bytecode | MEM_BIT | NUM_BIT;
+            ProcessorArgumentType value = atof(argument + ONE_SYMBOL_SKIP);
             memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
             (*offset) += sizeof(ProcessorContainer);
             memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
@@ -52,6 +52,7 @@ void argument_determinant(
     }
     else /*if jmp mark*/
     {
+        (*ip)++;
         spucommand = bytecode;
         memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
         (*offset) += sizeof(ProcessorContainer);
@@ -59,7 +60,6 @@ void argument_determinant(
         undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*offset);
         (*undeflabelspos)++;
         (*offset) += sizeof(ProcessorContainer);
-        (*ip)++;
     }
 }
 
@@ -74,7 +74,6 @@ void argument_determinant(
         }                                                                                           \
         else if (args == 1)                                                                         \
         {                                                                                           \
-            /* TODO move to function */                                                             \
             sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                      \
             inbuffer_offset += (size_t)asm_offset;                                                  \
             argument_determinant(                                                                   \
@@ -126,7 +125,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     assert(outputfile != NULL);
 
     size_t outbuffer_size = START_BUFFER_SIZE;
-    char *outbuffer = (char *)calloc(outbuffer_size, sizeof(char));
+    char *outbuffer = (char*)calloc(outbuffer_size, sizeof(char));
     assert(outbuffer != NULL);
 
     size_t  outbuffer_offset    = 0;
@@ -153,6 +152,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
                 inbuffer_offset++;
             continue;
         }
+
         /*processing marks*/
         if (*(asmfunc + asm_offset - 2) == ':')
         {
@@ -197,7 +197,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
 
     fwrite(outbuffer, outbuffer_offset, sizeof(char), outputfile);
 
-    free(outbuffer);
-    free(inbuffer);
-    fclose(outputfile);
+    free    (outbuffer  );
+    free    (inbuffer   );
+    fclose  (outputfile );
 }

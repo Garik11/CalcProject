@@ -41,8 +41,10 @@ DEF_CMD(POP, 0x35, ONE_ARGUMENT,
             if(nowcode & REG_BIT){
                 size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
                 assert(R_STATUS < NUMBER_OF_REGISTERS);
-                size_t offset   = (size_t)pr.reg[R_STATUS];
-                ((ProcessorArgumentType*)pr.MEM)[offset] = DO_POP(pr.stk);
+                size_t offset   = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
+                ProcessorArgumentType poppednum = DO_POP(pr.stk);
+                memcpy(pr.MEM + offset, &poppednum, sizeof(ProcessorArgumentType));
+                //((ProcessorArgumentType*)pr.MEM)[offset] = DO_POP(pr.stk);
 
             }
             else if(nowcode & NUM_BIT){

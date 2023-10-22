@@ -19,15 +19,15 @@ char* creacte_reg(long offset){
             if(command & REG_BIT){                                                                      \
                 fprintf(outputfile, "%s", creacte_reg((command >> REG_BITS)));                          \
             }                                                                                           \
-            else if(command & NUM_BIT){         \
-                double dubarg = 0;                                                                      \
+            else if(command & NUM_BIT){                                                                 \
+                ProcessorArgumentType dubarg = 0;                                                       \
                 сounter_non_commands++;                                                                 \
                 fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
                 fprintf(outputfile,"%lg", dubarg);                                                      \
             }                                                                                           \
             else /*jmp mark*/{                                                                          \
                 ProcessorContainer dubarg = 0;                                                          \
-                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);\
+                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);                               \
                 dubarg -= (ProcessorContainer)сounter_non_commands;                                     \
                 сounter_non_commands++;                                                                 \
                 fprintf(outputfile,"%ld", dubarg);                                                      \
@@ -45,20 +45,20 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_OUTPUT != NULL);
 
         FILE* inputfile  = fopen(FILE_NAME_INPUT,  "rb");
-        FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w");
+        FILE* outputfile = fopen(FILE_NAME_OUTPUT, "w" );
 
         assert(inputfile  != NULL);
         assert(outputfile != NULL);
 
-        ProcessorContainer command = {};
+        ProcessorContainer command  = 0;
         size_t сounter_non_commands = 0;
         
-        char authors_name   [sizeof(AUTHORS_NAME)   + 1] = {};
-        assert(fread(authors_name, sizeof(AUTHORS_NAME), 1, inputfile) == FREAD_SUCCES);
-        char version        [sizeof(VERSION)        + 1] = {};
-        assert(fread(version, sizeof(VERSION), 1, inputfile) == FREAD_SUCCES);
+        char authors_name   [sizeof(AUTHORS_NAME)   + ONE_ADDITIONAL_SYMBOL] = {};
+        assert(fread(authors_name, sizeof(AUTHORS_NAME),    1, inputfile) == FREAD_SUCCES);
+        char version        [sizeof(VERSION)        + ONE_ADDITIONAL_SYMBOL] = {};
+        assert(fread(version, sizeof(VERSION),              1, inputfile) == FREAD_SUCCES);
 
-        printf("Author's name: %s, version:%s\n", authors_name, version);
+        printf("Author's name: %s, version: %s\n", authors_name, version);
         printf("Disassembling...\n");
 
         while(fread(&command, sizeof(ProcessorContainer), 1, inputfile) == FREAD_SUCCES){

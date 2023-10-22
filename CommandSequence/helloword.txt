@@ -1,19 +1,40 @@
-push 10
-push 79
-push 76
-push 76
-push 69
-push 72
-pop rax
-outc rax
-pop rax
-outc rax
-pop rax
-outc rax
-pop rax
-outc rax
-pop rax
-outc rax
-pop rax
-outc rax
+push 10 ; '\n'
+push 33 ; '!'
+push 68 ; 'D'
+push 76 ; 'L'
+push 82 ; 'R'
+push 79 ; 'O'
+push 87 ; 'W'
+push 32 ; ' '
+push 79 ; 'O'
+push 76 ; 'L'
+push 76 ; 'L'
+push 69 ; 'E'
+push 72 ; 'H'
+pop rax  ;        HELLO WORLD!\n
+outc rax ; ———————|||||||||||||
+pop rax  ;         ||||||||||||
+outc rax ; ————————||||||||||||
+pop rax  ;          |||||||||||
+outc rax ; —————————|||||||||||
+pop rax  ;           ||||||||||
+outc rax ; ——————————||||||||||
+pop rax  ;            |||||||||
+outc rax ; ———————————|||||||||
+pop rax  ;             ||||||||
+outc rax ; ————————————||||||||
+pop rax  ;              |||||||
+outc rax ; —————————————|||||||
+pop rax  ;               ||||||
+outc rax ; ——————————————||||||
+pop rax  ;                |||||
+outc rax ; ———————————————|||||
+pop rax  ;                 ||||
+outc rax ; ————————————————||||
+pop rax  ;                  |||
+outc rax ; —————————————————|||
+pop rax  ;                   ||
+outc rax ; ——————————————————||
+pop rax  ;                    |
+outc rax ; ———————————————————|
 hlt

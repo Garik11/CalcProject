@@ -53,14 +53,14 @@ void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
 void toupper_all(char *str);
 
 void argument_determinant(  
-                            char *pointer_to_write, 
-                            size_t *offset, 
-                            int64_t bytecode, 
-                            char *argument, 
-                            int argument_size, 
-                            UndefLashes *undeflabels, 
-                            size_t* undeflabelspos, 
-                            size_t *ip
+                            char*           pointer_to_write    , 
+                            size_t*         offset              , 
+                            int64_t         bytecode            , 
+                            char*           argument            , 
+                            int             argument_size       , 
+                            UndefLashes*    undeflabels         , 
+                            size_t*         undeflabelspos      , 
+                            size_t*         ip
                         );
 
 #endif // !CALC_ASSEMBLER_H
