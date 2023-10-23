@@ -2,6 +2,7 @@ in
 call fact
 out
 hlt
+
 fact:
     pop rax
     push rax
@@ -16,9 +17,10 @@ fact:
     sub
     call fact
     mul
-out:
-    ret
-nullout:
-    pop rax
-    push 1
-    ret
+
+    out:
+        ret
+    nullout:
+        pop rax
+        push 1
+        ret

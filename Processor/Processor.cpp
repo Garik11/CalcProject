@@ -210,8 +210,8 @@ void processor(const char* FILE_NAME){
         memcpy(&nowcode, pr.code + pr.ip * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
 
         pr.ip++;
-        //printf("NOW INST: %ld \n", nowcode & MASK_CODE);
-        //PROCESSOR_DUMP(pr, PROC_ALL_OK);
+        printf("NOW INST: %ld \n", nowcode & MASK_CODE);
+        PROCESSOR_DUMP(pr, PROC_ALL_OK);
         /*
         int64_t b = nowcode;
         while(b){
@@ -232,7 +232,7 @@ void processor(const char* FILE_NAME){
     HLT:
         void(0); //del
 
-    PROCESSOR_DUMP(pr, PROC_ALL_OK);
+    //PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
     ProcessorDtor(pr);
 }

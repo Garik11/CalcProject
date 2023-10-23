@@ -6,7 +6,7 @@
     /*Author's name, include at the beginning of the file */
     static const char AUTHORS_NAME  [] = "KXI";
     /*Version include at the beginning of the file */
-    static const char VERSION       [] = "1.0.2";
+    static const char VERSION       [] = "1.2";
 
     static const size_t CODE_START_SIZE = 1000  ;
     static const size_t IP_START_POS    = 0     ;

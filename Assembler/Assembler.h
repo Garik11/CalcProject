@@ -63,4 +63,11 @@ void argument_determinant(
                             size_t*         ip
                         );
 
+int sscanf_s_fidex_n(
+                        const char*     input       , 
+                        char*           output      , 
+                        size_t*         input_offset, 
+                        size_t*         output_size
+                    );
+
 #endif // !CALC_ASSEMBLER_H

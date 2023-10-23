@@ -21,15 +21,12 @@ char* creacte_reg(long offset){
             }                                                                                           \
             else if(command & NUM_BIT){                                                                 \
                 ProcessorArgumentType dubarg = 0;                                                       \
-                сounter_non_commands++;                                                                 \
                 fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
                 fprintf(outputfile,"%lg", dubarg);                                                      \
             }                                                                                           \
             else /*jmp mark*/{                                                                          \
                 ProcessorContainer dubarg = 0;                                                          \
                 fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);                               \
-                dubarg -= (ProcessorContainer)сounter_non_commands;                                     \
-                сounter_non_commands++;                                                                 \
                 fprintf(outputfile,"%ld", dubarg);                                                      \
             }                                                                                           \
             if(command & MEM_BIT){                                                                      \
@@ -51,7 +48,6 @@ void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(outputfile != NULL);
 
         ProcessorContainer command  = 0;
-        size_t сounter_non_commands = 0;
         
         char authors_name   [sizeof(AUTHORS_NAME)   + ONE_ADDITIONAL_SYMBOL] = {};
         assert(fread(authors_name, sizeof(AUTHORS_NAME),    1, inputfile) == FREAD_SUCCES);

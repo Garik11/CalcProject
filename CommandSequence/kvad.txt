@@ -1,20 +1,49 @@
-in
-in
-in
+in  ; a rax
+in  ; b rbx
+in  ; c rcx
+
 call calculatediskr
+
+sqrt
+
+pop rdx
+push 0
+push rbx
+push rdx
+sub
+sub
+push 2
+push rax
+mul
+div
 out
+
+push 0
+push rbx
+push rdx
+add
+sub
+push 2
+push rax
+mul
+div
+out
+
 hlt
 calculatediskr:
-pop rcx 
-pop rbx
-pop rax
-push rbx
-push rbx
-mul
-push 4
-push rax
-push rcx
-mul
-mul
-sub
-ret
+    pop rcx 
+    pop rbx
+    pop rax
+    push rbx
+    push rbx
+    mul
+    push 4
+    push rax
+    push rcx
+    mul
+    mul
+    sub
+    ret
+
+; a b c d
+; x = (-b - d) /2a

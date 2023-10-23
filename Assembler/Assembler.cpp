@@ -6,16 +6,45 @@ void toupper_all(char *str)
         *p = (char)toupper(*p);
 }
 
+int sscanf_s_fidex_n(const char* input, char* output, size_t* input_offset, size_t* output_size){
+    static const int SCNAF_SUCCES = 2;
+    assert(input        != NULL);
+    assert(output       != NULL);
+    assert(input_offset != NULL);
+    assert(output_size  != NULL);
+    *input_offset   = 0;
+    *output_size    = 0;
+    while(isspace(*input) && *input != 0){
+        (*input_offset)++;
+        input++;
+    }
+    while(isspace(*input) == 0 && *input != 0){
+        *output = *input;
+        output  ++;
+        input   ++;
+        (*input_offset) ++;
+        (*output_size)  ++;
+    }
+
+    *output = 0;//Nuller last symbol
+
+    if(*output_size == 0)
+        return EOF          ;
+    else
+        return SCNAF_SUCCES;
+}
+
+
 // функция аргумент
 void argument_determinant(  
-                            char *pointer_to_write      , 
-                            size_t *offset              , 
-                            int64_t bytecode            , 
-                            char *argument              , 
-                            int argument_size           , 
-                            UndefLashes *undeflabels    , 
-                            size_t* undeflabelspos      , 
-                            size_t *ip
+                            char*       pointer_to_write    , 
+                            size_t*     offset              , 
+                            int64_t     bytecode            , 
+                            char*       argument            , 
+                            size_t       argument_size      , 
+                            UndefLashes*undeflabels         , 
+                            size_t*     undeflabelspos      , 
+                            size_t*     ip
                         )
 {
     ProcessorContainer spucommand;
@@ -74,14 +103,19 @@ void argument_determinant(
         }                                                                                           \
         else if (args == 1)                                                                         \
         {                                                                                           \
-            sscanf(inbuffer + inbuffer_offset, "%s%n", argument, &asm_offset);                      \
-            inbuffer_offset += (size_t)asm_offset;                                                  \
+            sscanf_s_fidex_n(                                                                       \
+                                inbuffer + inbuffer_offset  ,                                       \
+                                argument                    ,                                       \
+                                &inbuffer_additional_offset ,                                       \
+                                &asmfunc_size                                                       \
+                            );                                                                      \
+            inbuffer_offset += inbuffer_additional_offset;                                          \
             argument_determinant(                                                                   \
                                     outbuffer,                                                      \
                                     &outbuffer_offset,                                              \
                                     num,                                                            \
                                     argument,                                                       \
-                                    asm_offset,                                                     \
+                                    asmfunc_size,                                                   \
                                     undeflabels,                                                    \
                                     &undeflabelspos,                                                \
                                     &ip                                                             \
@@ -128,21 +162,27 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     char *outbuffer = (char*)calloc(outbuffer_size, sizeof(char));
     assert(outbuffer != NULL);
 
-    size_t  outbuffer_offset    = 0;
-    size_t  inbuffer_offset     = 0;
-    int     asm_offset          = 0;
+    size_t  outbuffer_offset            = 0;
+    size_t  inbuffer_offset             = 0;
+    size_t  inbuffer_additional_offset  = {};
+    size_t  asmfunc_size                  = {};
 
     size_t ip = 0;
 
     memcpy(outbuffer + outbuffer_offset, AUTHORS_NAME,  sizeof(AUTHORS_NAME));
     outbuffer_offset += sizeof(AUTHORS_NAME);
     memcpy(outbuffer + outbuffer_offset, VERSION,       sizeof(VERSION)     );
-    outbuffer_offset += sizeof(VERSION);
-
-    while (sscanf(inbuffer + inbuffer_offset, "%s%n", asmfunc, &asm_offset) != EOF)
+    outbuffer_offset += sizeof(VERSION);    
+    
+    while(sscanf_s_fidex_n(
+                            inbuffer + inbuffer_offset  , 
+                            asmfunc                     , 
+                            &inbuffer_additional_offset , 
+                            &asmfunc_size                 ) != EOF
+        )
     {
-
-        inbuffer_offset += (size_t)asm_offset;
+        
+        inbuffer_offset += inbuffer_additional_offset;
 
         /*processing comments*/
         if (*asmfunc == ';')
@@ -154,9 +194,11 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         }
 
         /*processing marks*/
-        if (*(asmfunc + asm_offset - 2) == ':')
+        printf("sze = %lu, command = %s\n", asmfunc_size, asmfunc);
+        assert(asmfunc_size != 0);
+        if (*(asmfunc + asmfunc_size - 1) == ':')
         {
-            strncpy(labels[labelspos].LABEL_NAME, asmfunc, (size_t)(asm_offset - 2));
+            strncpy(labels[labelspos].LABEL_NAME, asmfunc, (size_t)(asmfunc_size - 2));
             labels[labelspos].label_ip = ip;
             labelspos++;
             continue;
@@ -179,21 +221,21 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         #include "../GlobalHeaders/DSL.h"
         /*else*/ void(0);
     }
+    size_t counter_verified_marks = 0;
     for (size_t udpos = 0; udpos < undeflabelspos; udpos++)
     {
         for (size_t dpos = 0; dpos < labelspos; dpos++)
         {
             if (strcmp(undeflabels[udpos].UNDEF_LABEL_NAME, labels[dpos].LABEL_NAME) == 0)
             {
+                counter_verified_marks++;
                 memcpy((void *)(outbuffer + undeflabels[udpos].UNDEF_BUFFER_POS), &labels[dpos].label_ip, sizeof(size_t));
                 break;
             }
-            else if (dpos == labelspos - 1)
-            {
-                exit(-1);
-            }
         }
     }
+
+    assert(counter_verified_marks == undeflabelspos);
 
     fwrite(outbuffer, outbuffer_offset, sizeof(char), outputfile);
 
