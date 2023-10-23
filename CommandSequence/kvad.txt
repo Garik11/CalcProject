@@ -1,35 +1,36 @@
-in  ; a rax
-in  ; b rbx
-in  ; c rcx
+in          ; rax = a
+in          ; rbx = b
+in          ; rcx = c
 
-call calculatediskr
+call calculatediskr ; D = b^2 - 4ac
 
-sqrt
+sqrt        ; sqrt(D)
 
-pop rdx
-push 0
+pop rdx     ; rdx = sqrt(D)
+push 0      ; 0
 push rbx
 push rdx
-sub
-sub
+sub         ; 0 - d = -d
+sub         ;-d - b = -d - b
 push 2
 push rax
-mul
-div
-out
+mul         ; 2 * a = 2a
+div         ; (-b - d) /2a
+out         ; out (-b - d) /2a
 
-push 0
+push 0      ; 0 - b = -b
 push rbx
 push rdx
-add
-sub
+add         ; 0 + d = d
+sub         ; -b + d
 push 2
-push rax
-mul
+push rax    ; 2 * a = 2a
+mul         ; (-b + d) /2a
 div
-out
+out         ; out (-b + d) /2a
 
 hlt
+
 calculatediskr:
     pop rcx 
     pop rbx
@@ -44,6 +45,3 @@ calculatediskr:
     mul
     sub
     ret
-
-; a b c d
-; x = (-b - d) /2a

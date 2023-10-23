@@ -43,11 +43,9 @@ enum PROCESS_ERRORS{
     PROC_IP_POS_ERROR   = 1 << 2
 };
 
-ProcStruct      ProcessorCtor       (const char* FILE_NAME);
-void            ProcessorDtor       (ProcStruct  procs);
-void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME);
-
-void ProcessortOutAllErrors(ProcessorError  errors);
+ProcStruct      ProcessorCtor       (const char* FILE_NAME                      );
+void            ProcessorDtor       (ProcStruct  procs                          );
+void            ProcessorGetCode    (ProcStruct *procs, const char* FILE_NAME   );
 
 ProcessorError  ProcessorVerificator(ProcStruct procs);
 void            ProcessorDump       (   
@@ -59,6 +57,7 @@ void            ProcessorDump       (
                                         const char*     FUNC
                                     );
 
+void ProcessortOutAllErrors(ProcessorError  errors);
 
 void processor(const char* FILE_NAME);
 

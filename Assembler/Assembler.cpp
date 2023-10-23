@@ -7,13 +7,17 @@ void toupper_all(char *str)
 }
 
 int sscanf_s_fidex_n(const char* input, char* output, size_t* input_offset, size_t* output_size){
+
     static const int SCNAF_SUCCES = 2;
+
     assert(input        != NULL);
     assert(output       != NULL);
     assert(input_offset != NULL);
     assert(output_size  != NULL);
+
     *input_offset   = 0;
     *output_size    = 0;
+
     while(isspace(*input) && *input != 0){
         (*input_offset)++;
         input++;
@@ -37,58 +41,74 @@ int sscanf_s_fidex_n(const char* input, char* output, size_t* input_offset, size
 
 // функция аргумент
 void argument_determinant(  
-                            char*       pointer_to_write    , 
-                            size_t*     offset              , 
-                            int64_t     bytecode            , 
-                            char*       argument            , 
-                            size_t       argument_size      , 
-                            UndefLashes*undeflabels         , 
-                            size_t*     undeflabelspos      , 
-                            size_t*     ip
+                            char*           outbuffer           , 
+                            size_t*         outbuffer_offset    , 
+                            int64_t         bytecode            , 
+                            char*           argument            , 
+                            size_t          argument_size       , 
+                            UndefLashes*    undeflabels         , 
+                            size_t*         undeflabelspos      , 
+                            size_t*         ip
                         )
 {
-    ProcessorContainer spucommand;
-    if (argument[0] == 'R' && argument[2] == 'X') /*if argument*/
+
+    ProcessorContainer spucommand = {};
+
+    if (argument[0] == 'R' && argument[2] == 'X') /*if register*/
     {
         spucommand = (((int64_t)((argument[1] - 'A'))) << REG_BITS) | (bytecode | REG_BIT);
-        memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
-        (*offset) += sizeof(ProcessorContainer);
+        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+        (*outbuffer_offset) += sizeof(ProcessorContainer);
     }
     else if (isdigit(*argument)) /*if num*/
     {
         (*ip)++;
         spucommand = bytecode | NUM_BIT;
+
         ProcessorArgumentType value = atof(argument);
-        memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
-        (*offset) += sizeof(ProcessorContainer);
-        memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
-        (*offset) += sizeof(ProcessorContainer);
-    } else if((*argument) == '[' && *(argument + argument_size - 2) == ']'){
-        if(argument[1] == 'R' && argument[3] == 'X'){
+
+        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+        (*outbuffer_offset) += sizeof(ProcessorContainer);
+        memcpy((void *)(outbuffer + (*outbuffer_offset)), &value, sizeof(ProcessorContainer));
+        (*outbuffer_offset) += sizeof(ProcessorContainer);
+
+    } else if((*argument) == '[' && *(argument + argument_size - 2) == ']'){ /*if mem*/
+        if(argument[1] == 'R' && argument[3] == 'X'){   /*if mem [register]*/
+
             spucommand = (((int64_t)((argument[2] - 'A'))) << REG_BITS) | (bytecode | MEM_BIT | REG_BIT);
-            memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
-            (*offset) += sizeof(ProcessorContainer);
+
+            memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+            (*outbuffer_offset) += sizeof(ProcessorContainer);
+
         }
-        else {
+        else {  /*if mem [num]*/
+            
             (*ip)++;
             spucommand = bytecode | MEM_BIT | NUM_BIT;
+
             ProcessorArgumentType value = atof(argument + ONE_SYMBOL_SKIP);
-            memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
-            (*offset) += sizeof(ProcessorContainer);
-            memcpy((void *)(pointer_to_write + (*offset)), &value, sizeof(ProcessorContainer));
-            (*offset) += sizeof(ProcessorContainer);
+
+            memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+            (*outbuffer_offset) += sizeof(ProcessorContainer);
+            memcpy((void *)(outbuffer + (*outbuffer_offset)), &value, sizeof(ProcessorContainer));
+            (*outbuffer_offset) += sizeof(ProcessorContainer);
+
         }
     }
     else /*if jmp mark*/
     {
         (*ip)++;
         spucommand = bytecode;
-        memcpy((void *)(pointer_to_write + (*offset)), &spucommand, sizeof(ProcessorContainer));
-        (*offset) += sizeof(ProcessorContainer);
-        strncpy(undeflabels[*undeflabelspos].UNDEF_LABEL_NAME, argument, (size_t)(argument_size - ONE_SYMBOL_SKIP));
-        undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*offset);
+
+        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+        (*outbuffer_offset) += sizeof(ProcessorContainer);
+
+        /*save lashes to undef*/
+        strncpy(undeflabels[*undeflabelspos].UNDEF_LABEL_NAME, argument, argument_size - ONE_SYMBOL_SKIP);
+        undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*outbuffer_offset);
+
         (*undeflabelspos)++;
-        (*offset) += sizeof(ProcessorContainer);
+        (*outbuffer_offset) += sizeof(ProcessorContainer);
     }
 }
 
@@ -127,27 +147,34 @@ void argument_determinant(
 
 void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
 {
-    assert(FILE_NAME_INPUT != NULL);
+    assert(FILE_NAME_INPUT  != NULL);
     assert(FILE_NAME_OUTPUT != NULL);
 
+    /*asm instruction buffer*/
     static char asmfunc[MAX_FUNC_NAME_SIZE] = {};
 
     /*Size of input buffer*/
     size_t inbuffer_size = 0;
+    /*File size*/
     size_t fsize_status = fsize(FILE_NAME_INPUT, &inbuffer_size);
     assert(fsize_status == FSIZE_SUCCES);
 
+    /*inbuffer*/
     char *inbuffer = (char *)calloc(sizeof(char), inbuffer_size + EXTRA_BYTE);
     assert(inbuffer != NULL);
 
+    /*open file for inbuffer*/
     FILE *infile = fopen(FILE_NAME_INPUT, "r");
     assert(infile != NULL);
 
-    size_t fread_size = fread(inbuffer, inbuffer_size, sizeof(char), infile);
-    assert(fread_size == FREAD_SUCCES);
+    /*file size*/
+    size_t fread_status = fread(inbuffer, inbuffer_size, sizeof(char), infile);
+    assert(fread_status == FREAD_SUCCES);
 
-    toupper_all(inbuffer);
     fclose(infile);
+
+    /*toupper all symbols in text*/
+    toupper_all(inbuffer);
 
     Lashes      labels      [MAX_LABEL_NUMBER] = {};
     UndefLashes undeflabels [MAX_LABEL_NUMBER] = {};
@@ -165,7 +192,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     size_t  outbuffer_offset            = 0;
     size_t  inbuffer_offset             = 0;
     size_t  inbuffer_additional_offset  = {};
-    size_t  asmfunc_size                  = {};
+    size_t  asmfunc_size                = {};
 
     size_t ip = 0;
 
@@ -196,9 +223,9 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         /*processing marks*/
         printf("sze = %lu, command = %s\n", asmfunc_size, asmfunc);
         assert(asmfunc_size != 0);
-        if (*(asmfunc + asmfunc_size - 1) == ':')
+        if (*(asmfunc + asmfunc_size - 1) == ':' && asmfunc_size > 1)
         {
-            strncpy(labels[labelspos].LABEL_NAME, asmfunc, (size_t)(asmfunc_size - 2));
+            strncpy(labels[labelspos].LABEL_NAME, asmfunc, asmfunc_size - 2);
             labels[labelspos].label_ip = ip;
             labelspos++;
             continue;
@@ -221,6 +248,7 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         #include "../GlobalHeaders/DSL.h"
         /*else*/ void(0);
     }
+
     size_t counter_verified_marks = 0;
     for (size_t udpos = 0; udpos < undeflabelspos; udpos++)
     {
