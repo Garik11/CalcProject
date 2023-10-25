@@ -19,16 +19,11 @@ char* creacte_reg(long offset){
             if(command & REG_BIT){                                                                      \
                 fprintf(outputfile, "%s", creacte_reg((command >> REG_BITS)));                          \
             }                                                                                           \
-            else if(command & NUM_BIT){                                                                 \
+            else {                                                                                      \
                 ProcessorArgumentType dubarg = 0;                                                       \
                 fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
                 fprintf(outputfile,"%lg", dubarg);                                                      \
-            }                                                                                           \
-            else /*jmp mark*/{                                                                          \
-                ProcessorContainer dubarg = 0;                                                          \
-                fread(&dubarg, sizeof(ProcessorContainer), 1, inputfile);                               \
-                fprintf(outputfile,"%ld", dubarg);                                                      \
-            }                                                                                           \
+            }                                                                                           \                                                                                   
             if(command & MEM_BIT){                                                                      \
                 fprintf(outputfile, "%c", ']');                                                         \
             }                                                                                           \

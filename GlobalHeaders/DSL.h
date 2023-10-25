@@ -127,14 +127,15 @@ DEF_CMD(HLT, 63, NON_ARGUMENT,
 
 DEF_CMD(JMP, 64, ONE_ARGUMENT, 
     {
-        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+        printf("DO JMP TO IP:%llu\n", (size_t)((ProcessorArgumentType*)pr.code)[pr.ip]);
+        pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
     }
 )
 
 DEF_CMD(JE, 65, ONE_ARGUMENT, 
     {
         if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) < epsilan)
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;            
     }
@@ -143,7 +144,7 @@ DEF_CMD(JE, 65, ONE_ARGUMENT,
 DEF_CMD(JNE, 66, ONE_ARGUMENT, 
     {
         if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) > epsilan)
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;            
     }
@@ -152,7 +153,7 @@ DEF_CMD(JNE, 66, ONE_ARGUMENT,
 DEF_CMD(JG, 67, ONE_ARGUMENT, 
     {
         if(DO_POP(pr.stk) > DO_POP(pr.stk))
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;
     }
@@ -163,7 +164,7 @@ DEF_CMD(JGE, 68, ONE_ARGUMENT,
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
         if(first > second || fabs(first - second) < epsilan)
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;
 
@@ -173,7 +174,7 @@ DEF_CMD(JGE, 68, ONE_ARGUMENT,
 DEF_CMD(JL, 69, ONE_ARGUMENT, 
     {
         if(DO_POP(pr.stk) < DO_POP(pr.stk))
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;
     }
@@ -184,7 +185,7 @@ DEF_CMD(JLE, 70, ONE_ARGUMENT,
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
         if(DO_POP(pr.stk) < DO_POP(pr.stk) || fabs(first - second) < epsilan)
-            pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
         else
             pr.ip ++;            
     }
@@ -193,7 +194,7 @@ DEF_CMD(JLE, 70, ONE_ARGUMENT,
 DEF_CMD(CALL, 71, ONE_ARGUMENT, 
     {
         DO_PUSH(pr.call_stk, (double)(pr.ip + 1));
-        pr.ip = (size_t)((ProcessorContainer*)pr.code)[pr.ip];
+        pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
     }
 )
 
@@ -202,6 +203,9 @@ DEF_CMD(RET, 72, NON_ARGUMENT,
         pr.ip = (size_t)DO_POP(pr.call_stk);
     }
 )
+
+#warning to func argument calcultae
+
 DEF_CMD(OUTC, 73, ONE_ARGUMENT, 
     {
         if(nowcode & MEM_BIT){

@@ -13,6 +13,40 @@ static inline void      DO_SQRT     (Stack* stk);
 static inline void      DO_OUT      (Stack* stk);
 static inline void      DO_IN       (Stack* stk);
 
+ProcessorArgumentType checkArgument(ProcStruct pr, ProcessorContainer nowcode){
+        if(nowcode & MEM_BIT){
+            if(nowcode & REG_BIT){
+                size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
+                assert(R_STATUS < NUMBER_OF_REGISTERS);
+                ProcessorArgumentType pushednum = {};
+                size_t offset = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
+                memcpy(&pushednum, pr.MEM + offset, sizeof(ProcessorArgumentType));
+                DO_PUSH(pr.stk, pushednum);
+                return pushednum;
+            }
+            else if(nowcode & NUM_BIT){
+                ProcessorArgumentType pushednum = {};
+                size_t offset = (size_t)(((ProcessorArgumentType*)pr.code)[pr.ip]) * sizeof(ProcessorArgumentType);
+                memcpy(&pushednum, pr.MEM +  offset, sizeof(ProcessorArgumentType));
+                DO_PUSH(pr.stk, pushednum);
+                pr.ip++;
+                return pushednum;
+            }
+        }
+        else if(nowcode & REG_BIT){
+            size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
+            assert(R_STATUS < NUMBER_OF_REGISTERS);
+            return pr.reg[R_STATUS];
+        }
+        else if(nowcode & NUM_BIT){
+            ProcessorArgumentType pushednum = {};
+            size_t offset = pr.ip * sizeof(ProcessorArgumentType);
+            memcpy(&pushednum, pr.code + offset, sizeof(ProcessorArgumentType));
+            pr.ip++;
+            return pushednum;
+        }
+}
+
 ProcStruct ProcessorCtor (const char* FILE_NAME){
     ProcStruct outproc = {};
 
@@ -142,6 +176,12 @@ void ProcessorDump(
                 printf("%4ld ", outnum & MASK_CODE);
             }
             putchar('\n');
+            for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++){
+                static ProcessorArgumentType outnum = {};
+                memcpy(&outnum, procs.code + pos * sizeof(ProcessorArgumentType), sizeof(ProcessorArgumentType));
+                printf("%4.0lf ", outnum);
+            }
+            putchar('\n');
             if(procs.code_size > procs.ip){
                 for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip; pos++)
                     printf("%"SpecificatorSize"c ", ' ');
@@ -191,7 +231,7 @@ void ProcessorDump(
 }
 
 
-// move near switch, then undef
+#warning move near switch, then undef
 #define DEF_CMD(name, num, args, ...)       \
     case num:                               \
         __VA_ARGS__                         \
@@ -250,6 +290,7 @@ static inline ProcessorArgumentType DO_POP(Stack* stk){
     return outnum;
 }
 
+#warning for simple ops, move this block to cmd define
 static inline void DO_ADD(Stack* stk){
     ProcessorArgumentType first_value  = DO_POP(stk);
     ProcessorArgumentType second_value = DO_POP(stk);

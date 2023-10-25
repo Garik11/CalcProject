@@ -6,7 +6,7 @@
     /*Author's name, include at the beginning of the file */
     static const char AUTHORS_NAME  [] = "KXI";
     /*Version include at the beginning of the file */
-    static const char VERSION       [] = "1.2";
+    static const char VERSION       [] = "1.3";
 
     static const size_t CODE_START_SIZE = 1000  ;
     static const size_t IP_START_POS    = 0     ;
@@ -25,6 +25,7 @@
     static const int64_t REG_BITS = 24;
 
     static const int64_t MASK_CODE      = (int64_t)0x000000000000FFFF;
+    #warning MASK STATUS RENAME
     static const int64_t MASK_STATUS    = (int64_t)0x0000000000FF0000;
     static const int64_t MASK_REG       = (int64_t)0x00000000FF000000;
 
