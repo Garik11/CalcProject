@@ -66,7 +66,6 @@ void argument_determinant(
         spucommand = bytecode | NUM_BIT;
 
         ProcessorArgumentType value = atof(argument);
-        printf("YA TET %lf\n", value);
         memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
         (*outbuffer_offset) += sizeof(ProcessorContainer);
         memcpy((void *)(outbuffer + (*outbuffer_offset)), &value, sizeof(ProcessorContainer));
@@ -104,7 +103,6 @@ void argument_determinant(
 
         memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
         (*outbuffer_offset) += sizeof(ProcessorContainer);
-        printf("YA TYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYTTYT\n");
         strncpy(undeflabels[*undeflabelspos].UNDEF_LABEL_NAME, argument, argument_size - ONE_SYMBOL_SKIP);
         undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*outbuffer_offset);
         (*undeflabelspos)++;

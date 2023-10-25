@@ -3,35 +3,8 @@
 
 DEF_CMD(PUSH, 0x21, ONE_ARGUMENT, 
     {
-        if(nowcode & MEM_BIT){
-            if(nowcode & REG_BIT){
-                size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
-                assert(R_STATUS < NUMBER_OF_REGISTERS);
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM + offset, sizeof(ProcessorArgumentType));
-                DO_PUSH(pr.stk, pushednum);
-            }
-            else if(nowcode & NUM_BIT){
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)(((ProcessorArgumentType*)pr.code)[pr.ip]) * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM +  offset, sizeof(ProcessorArgumentType));
-                DO_PUSH(pr.stk, pushednum);
-                pr.ip++;
-            }
-        }
-        else if(nowcode & REG_BIT){
-            size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
-            assert(R_STATUS < NUMBER_OF_REGISTERS);
-            DO_PUSH(pr.stk, pr.reg[R_STATUS]);
-        }
-        else if(nowcode & NUM_BIT){
-            ProcessorArgumentType pushednum = {};
-            size_t offset = pr.ip * sizeof(ProcessorArgumentType);
-            memcpy(&pushednum, pr.code + offset, sizeof(ProcessorArgumentType));
-            DO_PUSH(pr.stk, pushednum);
-            pr.ip++;
-        }
+        ProcessorArgumentType value = argumentRead(&pr, nowcode);
+        DO_PUSH(pr.stk, value);
     }
 )
 
@@ -127,35 +100,34 @@ DEF_CMD(HLT, 63, NON_ARGUMENT,
 
 DEF_CMD(JMP, 64, ONE_ARGUMENT, 
     {
-        printf("DO JMP TO IP:%llu\n", (size_t)((ProcessorArgumentType*)pr.code)[pr.ip]);
-        pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+        pr.ip = calculateIP(&pr);
     }
 )
 
 DEF_CMD(JE, 65, ONE_ARGUMENT, 
     {
         if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) < epsilan)
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;            
+            pr.ip += NEXT_INSTRUCTION;               
     }
 )
 
 DEF_CMD(JNE, 66, ONE_ARGUMENT, 
     {
         if(fabs(DO_POP(pr.stk) - DO_POP(pr.stk)) > epsilan)
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;            
+            pr.ip += NEXT_INSTRUCTION;            
     }
 )
 
 DEF_CMD(JG, 67, ONE_ARGUMENT, 
     {
         if(DO_POP(pr.stk) > DO_POP(pr.stk))
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;
+            pr.ip += NEXT_INSTRUCTION;         
     }
 )
 
@@ -164,19 +136,18 @@ DEF_CMD(JGE, 68, ONE_ARGUMENT,
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
         if(first > second || fabs(first - second) < epsilan)
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;
-
+            pr.ip += NEXT_INSTRUCTION;         
     }
 )
 
 DEF_CMD(JL, 69, ONE_ARGUMENT, 
     {
         if(DO_POP(pr.stk) < DO_POP(pr.stk))
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;
+            pr.ip += NEXT_INSTRUCTION;         
     }
 )
 
@@ -185,16 +156,16 @@ DEF_CMD(JLE, 70, ONE_ARGUMENT,
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
         if(DO_POP(pr.stk) < DO_POP(pr.stk) || fabs(first - second) < epsilan)
-            pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+            pr.ip = calculateIP(&pr);
         else
-            pr.ip ++;            
+            pr.ip += NEXT_INSTRUCTION;          
     }
 )
 
 DEF_CMD(CALL, 71, ONE_ARGUMENT, 
     {
-        DO_PUSH(pr.call_stk, (double)(pr.ip + 1));
-        pr.ip = (size_t)((ProcessorArgumentType*)pr.code)[pr.ip];
+        DO_PUSH(pr.call_stk, (double)(pr.ip + NEXT_INSTRUCTION));
+        pr.ip = calculateIP(&pr);
     }
 )
 
@@ -208,35 +179,8 @@ DEF_CMD(RET, 72, NON_ARGUMENT,
 
 DEF_CMD(OUTC, 73, ONE_ARGUMENT, 
     {
-        if(nowcode & MEM_BIT){
-            if(nowcode & REG_BIT){
-                size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
-                assert(R_STATUS < NUMBER_OF_REGISTERS);
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM + offset, sizeof(ProcessorArgumentType));
-                printf("%c", (int)pushednum);
-            }
-            else if(nowcode & NUM_BIT){
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)(((ProcessorArgumentType*)pr.code)[pr.ip]) * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM +  offset, sizeof(ProcessorArgumentType));
-                printf("%c", (int)pushednum);
-                pr.ip++;
-            }
-        }
-        else if(nowcode & REG_BIT){
-            size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
-            assert(R_STATUS < NUMBER_OF_REGISTERS);
-            printf("%c", (int)pr.reg[R_STATUS]);
-        }
-        else if(nowcode & NUM_BIT){
-            ProcessorArgumentType pushednum = {};
-            size_t offset = pr.ip * sizeof(ProcessorArgumentType);
-            memcpy(&pushednum, pr.code + offset, sizeof(ProcessorArgumentType));
-            printf("%c", (int)pushednum);
-            pr.ip++;
-        }
+        ProcessorArgumentType value = argumentRead(&pr, nowcode);
+        printf("%c", (int)value);
     }
 )
 

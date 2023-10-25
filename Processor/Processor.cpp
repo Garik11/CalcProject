@@ -13,38 +13,44 @@ static inline void      DO_SQRT     (Stack* stk);
 static inline void      DO_OUT      (Stack* stk);
 static inline void      DO_IN       (Stack* stk);
 
-ProcessorArgumentType checkArgument(ProcStruct pr, ProcessorContainer nowcode){
-        if(nowcode & MEM_BIT){
-            if(nowcode & REG_BIT){
-                size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
-                assert(R_STATUS < NUMBER_OF_REGISTERS);
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM + offset, sizeof(ProcessorArgumentType));
-                DO_PUSH(pr.stk, pushednum);
-                return pushednum;
-            }
-            else if(nowcode & NUM_BIT){
-                ProcessorArgumentType pushednum = {};
-                size_t offset = (size_t)(((ProcessorArgumentType*)pr.code)[pr.ip]) * sizeof(ProcessorArgumentType);
-                memcpy(&pushednum, pr.MEM +  offset, sizeof(ProcessorArgumentType));
-                DO_PUSH(pr.stk, pushednum);
-                pr.ip++;
-                return pushednum;
-            }
-        }
-        else if(nowcode & REG_BIT){
+size_t calculateIP(ProcStruct *pr){
+    assert(pr != NULL);
+    double calculatedIP = {};
+    memcpy(
+            &calculatedIP                                       , 
+            pr->code + pr->ip * sizeof(ProcessorArgumentType)   , 
+            sizeof(ProcessorArgumentType)
+        );
+    return (size_t)calculatedIP;
+}
+
+ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode){
+    assert(pr != NULL);
+    ProcessorArgumentType pushednum = PROC_POISON_NUM;
+    if(nowcode & MEM_BIT){
+        if(nowcode & REG_BIT){
             size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
             assert(R_STATUS < NUMBER_OF_REGISTERS);
-            return pr.reg[R_STATUS];
+            size_t offset = (size_t)pr->reg[R_STATUS] * sizeof(ProcessorArgumentType);
+            memcpy(&pushednum, pr->MEM + offset, sizeof(ProcessorArgumentType));
         }
         else if(nowcode & NUM_BIT){
-            ProcessorArgumentType pushednum = {};
-            size_t offset = pr.ip * sizeof(ProcessorArgumentType);
-            memcpy(&pushednum, pr.code + offset, sizeof(ProcessorArgumentType));
-            pr.ip++;
-            return pushednum;
+            size_t offset = (size_t)(((ProcessorArgumentType*)pr->code)[pr->ip]) * sizeof(ProcessorArgumentType);
+            memcpy(&pushednum, pr->MEM +  offset, sizeof(ProcessorArgumentType));
+            pr->ip++;
         }
+    }
+    else if(nowcode & REG_BIT){
+        size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
+        assert(R_STATUS < NUMBER_OF_REGISTERS);
+        pushednum = pr->reg[R_STATUS];
+    }
+    else if(nowcode & NUM_BIT){
+        size_t offset = pr->ip * sizeof(ProcessorArgumentType);
+        memcpy(&pushednum, pr->code + offset, sizeof(ProcessorArgumentType));
+        pr->ip++;
+    }
+    return pushednum;
 }
 
 ProcStruct ProcessorCtor (const char* FILE_NAME){

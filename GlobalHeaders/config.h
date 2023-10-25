@@ -36,6 +36,7 @@
     static const int64_t ONE_VALUE              = 1;
     static const int64_t ONE_SYMBOL_SKIP        = 1;
     static const int64_t ONE_ADDITIONAL_SYMBOL  = 1;
+    static const int64_t NEXT_INSTRUCTION       = 1;
 
     static const double epsilan = 0.0000001;
 
