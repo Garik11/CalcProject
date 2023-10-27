@@ -1,0 +1,28 @@
+push 10 ; '\n'
+push 33 ; '!'
+push 68 ; 'D'
+push 76 ; 'L'
+push 82 ; 'R'
+push 79 ; 'O'
+push 87 ; 'W'
+push 32 ; ' '
+push 79 ; 'O'
+push 76 ; 'L'
+push 76 ; 'L'
+push 69 ; 'E'
+push 72 ; 'H'
+pop [0]
+pop [1]
+pop [2]
+pop [3]
+pop [4]
+pop [5]
+pop [6]
+pop [7]
+pop [8]
+pop [9]
+pop [10]
+pop [11]
+pop [12]
+outall
+hlt

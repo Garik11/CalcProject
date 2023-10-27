@@ -6,9 +6,9 @@
 #include "./Disassembler/Disassembler.h"
 
 int main(void){
-    const char FILE_NAME_INPUT          [] = "./CommandSequence/kvad.txt"       ;
-    const char FILE_NAME_OUTPUT         [] = "./CommandSequence/kvad.eq"        ;
-    const char FILE_NAME_DISASSEMBLER   [] = "./CommandSequence/kvad_ASM.txt"   ;
+    const char FILE_NAME_INPUT          [] = "./CommandSequence/test.txt"       ;
+    const char FILE_NAME_OUTPUT         [] = "./CommandSequence/test.eq"        ;
+    const char FILE_NAME_DISASSEMBLER   [] = "./CommandSequence/test_ASM.txt"   ;
 
     assembler     (FILE_NAME_INPUT, FILE_NAME_OUTPUT            );
     processor     (FILE_NAME_OUTPUT                             );

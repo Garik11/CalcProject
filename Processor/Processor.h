@@ -57,8 +57,8 @@ void            ProcessorDump       (
                                         const char*     FUNC
                                     );
 
-ProcessorArgumentType ArgumentRead(ProcStruct *pr, ProcessorContainer nowcode);
-size_t calculateIP(ProcStruct *pr);
+ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode);
+size_t calculateIP(const ProcStruct *pr);
 
 void ProcessortOutAllErrors(ProcessorError  errors);
 

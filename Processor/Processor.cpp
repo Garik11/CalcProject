@@ -13,7 +13,7 @@ static inline void      DO_SQRT     (Stack* stk);
 static inline void      DO_OUT      (Stack* stk);
 static inline void      DO_IN       (Stack* stk);
 
-size_t calculateIP(ProcStruct *pr){
+size_t calculateIP(const ProcStruct *pr){
     assert(pr != NULL);
     double calculatedIP = {};
     memcpy(
@@ -25,35 +25,50 @@ size_t calculateIP(ProcStruct *pr){
 }
 
 ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode){
+
     assert(pr != NULL);
+
     ProcessorArgumentType pushednum = PROC_POISON_NUM;
+
     if(nowcode & MEM_BIT){
         if(nowcode & REG_BIT){
+
             size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
             assert(R_STATUS < NUMBER_OF_REGISTERS);
+
             size_t offset = (size_t)pr->reg[R_STATUS] * sizeof(ProcessorArgumentType);
             memcpy(&pushednum, pr->MEM + offset, sizeof(ProcessorArgumentType));
+
         }
         else if(nowcode & NUM_BIT){
-            size_t offset = (size_t)(((ProcessorArgumentType*)pr->code)[pr->ip]) * sizeof(ProcessorArgumentType);
+
+            size_t offset = calculateIP(pr) * sizeof(ProcessorArgumentType);
+
             memcpy(&pushednum, pr->MEM +  offset, sizeof(ProcessorArgumentType));
             pr->ip++;
         }
     }
     else if(nowcode & REG_BIT){
+
         size_t R_STATUS = (size_t)((nowcode & MASK_REG) >> REG_BITS);
         assert(R_STATUS < NUMBER_OF_REGISTERS);
+
         pushednum = pr->reg[R_STATUS];
     }
     else if(nowcode & NUM_BIT){
+
         size_t offset = pr->ip * sizeof(ProcessorArgumentType);
         memcpy(&pushednum, pr->code + offset, sizeof(ProcessorArgumentType));
+        
         pr->ip++;
     }
     return pushednum;
 }
 
 ProcStruct ProcessorCtor (const char* FILE_NAME){
+
+    assert(FILE_NAME != NULL);
+
     ProcStruct outproc = {};
 
     memset(&outproc.reg, 0, NUMBER_OF_REGISTERS * sizeof(ProcessorArgumentType));
@@ -93,8 +108,8 @@ void ProcessorDtor(ProcStruct procs){
 }
 
 void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
-
-    assert(FILE_NAME != NULL);
+    assert(procs        != NULL);
+    assert(FILE_NAME    != NULL);
 
     size_t file_size = {};
     assert(fsize(FILE_NAME, &file_size) == FSIZE_SUCCES);
@@ -108,14 +123,14 @@ void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
 
     int file_ownership = strncmp(procs->code, AUTHORS_NAME, sizeof(AUTHORS_NAME));
     if(file_ownership != 0){
-        printf("Incorrect author %s %s!\n", AUTHORS_NAME, procs->code);
+        printf("Incorrect author PROGRAM_ATH:%s FILE_ATH%s!\n", AUTHORS_NAME, procs->code);
         assert(file_ownership == 0);
     }
     procs->code += sizeof(AUTHORS_NAME);
 
     int file_versionship = strncmp(procs->code, VERSION, sizeof(VERSION));
     if(file_versionship != 0){
-        printf("Incorrect version %s %s\n", VERSION, procs->code);
+        printf("Incorrect version PROGRAM_VER:%s FILE_VER:%s\n", VERSION, procs->code);
         assert(file_versionship == 0);
     }
     procs->code += sizeof(VERSION);
@@ -145,12 +160,12 @@ void ProcessortOutAllErrors(ProcessorError  errors){
 }
 
 void ProcessorDump(     
-                        ProcStruct      procs       , 
-                        ProcessorError  errors      , 
-                        const char*     PROCS_NAME  ,
-                        const char*     FILE_NAME   , 
-                        int             LINE_NUM    , 
-                        const char*     FUNC_NAME
+                        const ProcStruct        procs       , 
+                        const ProcessorError    errors      , 
+                        const char*             PROCS_NAME  ,
+                        const char*             FILE_NAME   , 
+                        const int               LINE_NUM    , 
+                        const char*             FUNC_NAME
                     )
 {
     ProcessortOutAllErrors(errors);
@@ -172,54 +187,64 @@ void ProcessorDump(
 
     if(procs.code != NULL){
         printf("code[%p] = {\n", procs.code);
+        size_t start_pos    = {};
+        size_t end_pos      = {};
         if(procs.ip > CODE_OUTPUT_INTERVAL){
-            for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++)
-                printf("%"SpecificatorSize"lu ", pos);
-            putchar('\n');
-            for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++){
-                static ProcessorContainer outnum = {};
-                memcpy(&outnum, procs.code + pos * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
-                printf("%4ld ", outnum & MASK_CODE);
-            }
-            putchar('\n');
-            for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++){
-                static ProcessorArgumentType outnum = {};
-                memcpy(&outnum, procs.code + pos * sizeof(ProcessorArgumentType), sizeof(ProcessorArgumentType));
-                printf("%4.0lf ", outnum);
-            }
-            putchar('\n');
-            if(procs.code_size > procs.ip){
-                for(size_t pos = procs.ip - CODE_OUTPUT_INTERVAL; pos < procs.ip; pos++)
-                    printf("%"SpecificatorSize"c ", ' ');
-                printf("^^^^\n");
-            }
-        } 
-        else {
-            for(size_t pos = 0; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++)
-                printf("%"SpecificatorSize"lu ", pos);
-            putchar('\n');
-            for(size_t pos = 0; pos < procs.ip + CODE_OUTPUT_INTERVAL; pos++){
-                ProcessorContainer out = {};
-                memcpy(&out, procs.code + pos * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
-                out &= MASK_CODE;
-                printf("%" SpecificatorSize ProcesseorSpecificator " ", out);
-            }
-            putchar('\n');
-            if(procs.code_size > procs.ip){
-                for(size_t pos = 0; pos < procs.ip; pos++)
-                    printf("%"SpecificatorSize"c ", ' ');
-                printf("^^^^\n");
-            }
+            start_pos   = procs.ip - CODE_OUTPUT_INTERVAL;
+            end_pos     = procs.ip + CODE_OUTPUT_INTERVAL;
         }
+        else {
+            start_pos = 0;
+            end_pos = CODE_OUTPUT_INTERVAL * 2;
+        }
+
+        for(size_t pos = start_pos; pos < end_pos; pos++)
+            printf("%"ContainerSpecSize"lu ", pos);
+        putchar('\n');
+        for(size_t pos = start_pos; pos < end_pos; pos++){
+            static ProcessorContainer outnum = {};
+            memcpy(
+                    &outnum, 
+                    procs.code + pos * sizeof(ProcessorContainer), 
+                    sizeof(ProcessorContainer)
+                );
+            printf("%"ContainerSpecSize ContainerSpecificator " ", outnum & MASK_CODE);
+        }
+        putchar('\n');
+        for(size_t pos = start_pos; pos < end_pos; pos++){
+            static ProcessorArgumentType outnum = {};
+            memcpy(
+                    &outnum, 
+                    procs.code + pos * sizeof(ProcessorArgumentType), 
+                    sizeof(ProcessorArgumentType)
+                );
+            printf("%" ElementSpecSize ElementSpecificator " ", outnum);
+        }
+        putchar('\n');
+        if(procs.code_size > procs.ip){
+            for(size_t pos = start_pos; pos < procs.ip - FIX_INSTURCION_IP; pos++)
+                printf("%"ContainerSpecSize"c ", ' ');
+            printf("^^^^");
+        }
+        putchar('\n');
+
         if(procs.MEM != NULL){
             printf("MEM: \n");
             size_t memside = sqrt(PROC_MEM_SIZE / sizeof(ProcessorArgumentType));
             for(size_t i = 0; i < memside; i++){
+
                 putchar('\t');
+
                 for(size_t j = 0; j < memside; j++){
+
                     static ProcessorArgumentType outnum = {};
-                    memcpy(&outnum, procs.MEM + (i * memside + j) * sizeof(ProcessorArgumentType), sizeof(ProcessorArgumentType));
-                    printf("%2.2lg ", outnum);
+                    memcpy(
+                            &outnum, 
+                            procs.MEM + (i * memside + j) * sizeof(ProcessorArgumentType), 
+                            sizeof(ProcessorArgumentType)
+                        );
+                    printf("%" MEMSpecSize MEMSpecificator " ", outnum);
+
                 }
                 putchar('\n');
             }
@@ -236,13 +261,6 @@ void ProcessorDump(
     assert(FUNC_NAME != NULL            );
 }
 
-
-#warning move near switch, then undef
-#define DEF_CMD(name, num, args, ...)       \
-    case num:                               \
-        __VA_ARGS__                         \
-        break;                                
-
 void processor(const char* FILE_NAME){
     assert(FILE_NAME != NULL);
 
@@ -258,22 +276,19 @@ void processor(const char* FILE_NAME){
         pr.ip++;
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
         PROCESSOR_DUMP(pr, PROC_ALL_OK);
-        /*
-        int64_t b = nowcode;
-        while(b){
-            if(b & 1)
-                printf("1");
-            else
-                printf("0");
-            b >>= 1;
-        }*/
-        //putchar('\n');
+
+        #define DEF_CMD(name, num, args, ...)       \
+            case num:                               \
+            __VA_ARGS__                             \
+            break;     
+
         switch (nowcode & MASK_CODE){
             #include "../GlobalHeaders/DSL.h"
             default /*SIGILL_C*/:
-                printf("Incorrect instruction \"""%" ProcesseorSpecificator "\", terminate process!\n", nowcode & MASK_CODE);
+                printf("Incorrect instruction \"""%" ContainerSpecificator "\", terminate process!\n", nowcode & MASK_CODE);
                 goto HLT;
         }
+        #undef DEF_CMD
     }
     HLT:
         void(0); //del
@@ -336,13 +351,13 @@ static inline void DO_SQRT(Stack* stk){
 static inline void DO_OUT(Stack* stk){
     ProcessorArgumentType value  = DO_POP(stk);
     DO_PUSH(stk, value);
-    printf("Your value : %lf\n", value);
+    printf("Your value : %" ElementSpecificator "\n", value);
 
 }
 
 static inline void DO_IN(Stack* stk){
     ProcessorArgumentType value = {};
     printf("Enter value:\n");
-    assert(scanf("%lg", &value) == 1);
+    assert(scanf("%" ElementSpecificator, &value) == 1);
     DO_PUSH(stk, value);
 }

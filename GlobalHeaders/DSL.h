@@ -17,7 +17,6 @@ DEF_CMD(POP, 0x35, ONE_ARGUMENT,
                 size_t offset   = (size_t)pr.reg[R_STATUS] * sizeof(ProcessorArgumentType);
                 ProcessorArgumentType poppednum = DO_POP(pr.stk);
                 memcpy(pr.MEM + offset, &poppednum, sizeof(ProcessorArgumentType));
-                //((ProcessorArgumentType*)pr.MEM)[offset] = DO_POP(pr.stk);
 
             }
             else if(nowcode & NUM_BIT){
@@ -175,12 +174,27 @@ DEF_CMD(RET, 72, NON_ARGUMENT,
     }
 )
 
-#warning to func argument calcultae
-
 DEF_CMD(OUTC, 73, ONE_ARGUMENT, 
     {
         ProcessorArgumentType value = argumentRead(&pr, nowcode);
         printf("%c", (int)value);
+    }
+)
+DEF_CMD(OUTALL, 74, NON_ARGUMENT, 
+    {
+        size_t memside = sqrt(PROC_MEM_SIZE / sizeof(ProcessorArgumentType));
+        for(size_t i = 0; i < memside; i++){
+            for(size_t j = 0; j < memside; j++){
+                static ProcessorArgumentType outnum = {};
+                memcpy(
+                        &outnum, 
+                        pr.MEM + (i * memside + j) * sizeof(ProcessorArgumentType), 
+                        sizeof(ProcessorArgumentType)
+                );
+                printf("%c", (int)outnum);
+            }
+            putchar('\n');
+        }
     }
 )
 

@@ -13,16 +13,18 @@
 #include "../Processor/Stack/src/recalloc/recalloc.h"
 #include "../FileWork/TextReadFile.h"
 
+static const size_t MAX_MARK_TEXT_SIZE = 100;
+
 struct Lashes
 {
-    char LABEL_NAME[100];
+    char label_name[MAX_MARK_TEXT_SIZE];
     size_t label_ip;
 };
 
 struct UndefLashes
 {
-    char UNDEF_LABEL_NAME[100];
-    size_t UNDEF_BUFFER_POS;
+    char label_name[MAX_MARK_TEXT_SIZE];
+    size_t label_pos;
 };
 
 /*Max asm fubc name size*/
@@ -38,7 +40,6 @@ static const size_t START_BUFFER_SIZE = 1000;
 /*Buffer multiplier*/
 static const size_t BUFFER_MULTIPLIER = 2;
 
-/*Buffer for reading the function name*/
 /*INACCURACY of buffer size for mult*/
 static const size_t INACCURACY = 4;
 
@@ -59,8 +60,7 @@ void argument_determinant(
                             char*           argument            , 
                             size_t          argument_size       , 
                             UndefLashes*    undeflabels         , 
-                            size_t*         undeflabelspos      , 
-                            size_t*         ip
+                            size_t*         undeflabelspos
                         );
 
 int sscanf_s_fidex_n(

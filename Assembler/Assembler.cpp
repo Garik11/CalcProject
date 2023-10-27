@@ -1,9 +1,9 @@
 #include "Assembler.h"
 
-#warning jump to num
-
 void toupper_all(char *str){
+
     assert(str != NULL);
+
     for (char *p = str; *p != 0; p++)
         *p = (char)toupper(*p);
 }
@@ -31,14 +31,13 @@ int sscanf_s_fidex_n(const char* input, char* output, size_t* input_offset, size
         (*input_offset) ++;
         (*output_size)  ++;
     }
-
-    *output = 0;//Nuller last symbol
+    /*Nuller last symbol*/
+    *output = 0;
 
     if(*output_size == 0)   return EOF          ;
     else                    return SCNAF_SUCCES ;
 }
 
-#warning outbuffer-> pointer, del ip
 // функция аргумент
 void argument_determinant(  
                             char*           outbuffer           , 
@@ -47,66 +46,72 @@ void argument_determinant(
                             char*           argument            , 
                             size_t          argument_size       , 
                             UndefLashes*    undeflabels         , 
-                            size_t*         undeflabelspos      , 
-                            size_t*         ip
+                            size_t*         undeflabelspos
                         )
 {
 
-    ProcessorContainer spucommand = {};
+    ProcessorContainer spucommand = bytecode;
 
+    if(argument[0] == '[' && argument[argument_size - ONE_SYMBOL_SKIP] == ']'){
+
+        spucommand |= MEM_BIT;
+
+        argument        += ONE_SYMBOL_SKIP  ;
+        argument_size   -= TWO_SYMBOLS_SKIP ;
+    }
     if (argument[0] == 'R' && argument[2] == 'X') /*if register*/
     {
-        spucommand = (((int64_t)((argument[1] - 'A'))) << REG_BITS) | (bytecode | REG_BIT);
-        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+
+        spucommand |= REG_BIT;
+
+        spucommand |= (((int64_t)((argument[1] - 'A'))) << REG_BITS) | REG_BIT;
+
+        memcpy(
+                outbuffer + (*outbuffer_offset),
+                &spucommand,
+                sizeof(ProcessorContainer)
+            );
         (*outbuffer_offset) += sizeof(ProcessorContainer);
     }
     else if (isdigit(*argument)) /*if num*/
     {
-        (*ip)++;
-        spucommand = bytecode | NUM_BIT;
+        spucommand |= NUM_BIT;
 
         ProcessorArgumentType value = atof(argument);
-        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+        memcpy(
+                outbuffer + (*outbuffer_offset),
+                &spucommand, 
+                sizeof(ProcessorContainer)
+            );
         (*outbuffer_offset) += sizeof(ProcessorContainer);
-        memcpy((void *)(outbuffer + (*outbuffer_offset)), &value, sizeof(ProcessorContainer));
+
+        memcpy(
+                outbuffer + (*outbuffer_offset),
+                &value, 
+                sizeof(ProcessorContainer)
+            );
         (*outbuffer_offset) += sizeof(ProcessorContainer);
 
-    } else if((*argument) == '[' && *(argument + argument_size - 2) == ']'){ /*if mem*/
-        #warning deduplicate
-        if(argument[1] == 'R' && argument[3] == 'X'){   /*if mem [register]*/
-
-            spucommand = (((int64_t)((argument[2] - 'A'))) << REG_BITS) | (bytecode | MEM_BIT | REG_BIT);
-
-            memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
-            (*outbuffer_offset) += sizeof(ProcessorContainer);
-
-        }
-        else {  /*if mem [num]*/
-            #warning deduplicate
-            (*ip)++;
-            spucommand = bytecode | MEM_BIT | NUM_BIT;
-
-            ProcessorArgumentType value = atof(argument + ONE_SYMBOL_SKIP);
-
-            memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
-            (*outbuffer_offset) += sizeof(ProcessorContainer);
-            memcpy((void *)(outbuffer + (*outbuffer_offset)), &value, sizeof(ProcessorContainer));
-            (*outbuffer_offset) += sizeof(ProcessorContainer);
-
-        }
-    }
-    else /*if jmp mark*/
+    }  else /*if jmp text mark*/
     {
-        #warning label is num. move to function and handle like num
-        (*ip)++;
-        spucommand = bytecode;
+        spucommand |= bytecode;
 
-        memcpy((void *)(outbuffer + (*outbuffer_offset)), &spucommand, sizeof(ProcessorContainer));
+        memcpy(
+                outbuffer + (*outbuffer_offset),
+                &spucommand, 
+                sizeof(ProcessorContainer)
+            );
+
         (*outbuffer_offset) += sizeof(ProcessorContainer);
-        strncpy(undeflabels[*undeflabelspos].UNDEF_LABEL_NAME, argument, argument_size - ONE_SYMBOL_SKIP);
-        undeflabels[*undeflabelspos].UNDEF_BUFFER_POS = (*outbuffer_offset);
-        (*undeflabelspos)++;
 
+        strncpy(
+                undeflabels[*undeflabelspos].label_name, 
+                argument, 
+                argument_size - ONE_SYMBOL_SKIP
+            );
+
+        undeflabels[*undeflabelspos].label_pos = (*outbuffer_offset);
+        (*undeflabelspos)++;
 
         (*outbuffer_offset) += sizeof(ProcessorContainer);
     }
@@ -137,8 +142,7 @@ void argument_determinant(
                                     argument,                                                       \
                                     asmfunc_size,                                                   \
                                     undeflabels,                                                    \
-                                    &undeflabelspos,                                                \
-                                    &ip                                                             \
+                                    &undeflabelspos                                                 \
                                 );                                                                  \
         }                                                                                           \
     }                                                                                               \
@@ -194,11 +198,17 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
     size_t  inbuffer_additional_offset  = {};
     size_t  asmfunc_size                = {};
 
-    size_t ip = 0;
-
-    memcpy(outbuffer + outbuffer_offset, AUTHORS_NAME,  sizeof(AUTHORS_NAME));
+    memcpy(
+            outbuffer + outbuffer_offset, 
+            AUTHORS_NAME,
+            sizeof(AUTHORS_NAME)
+        );
     outbuffer_offset += sizeof(AUTHORS_NAME);
-    memcpy(outbuffer + outbuffer_offset, VERSION,       sizeof(VERSION)     );
+    memcpy(
+            outbuffer + outbuffer_offset, 
+            VERSION,
+            sizeof(VERSION)
+        );
     outbuffer_offset += sizeof(VERSION);    
     
     while(sscanf_s_fidex_n(
@@ -220,19 +230,22 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
             continue;
         }
 
-        /*processing marks*/
+        /*processing text marks*/
         printf("sze = %lu, command = %s\n", asmfunc_size, asmfunc);
         assert(asmfunc_size != 0);
-        if (*(asmfunc + asmfunc_size - 1) == ':' && asmfunc_size > 1)
+        if (asmfunc[asmfunc_size - ONE_SYMBOL_SKIP] == ':' && asmfunc_size > 1)
         {
-            strncpy(labels[labelspos].LABEL_NAME, asmfunc, asmfunc_size - 2);
-            labels[labelspos].label_ip = ip;
+            strncpy(
+                        labels[labelspos].label_name, 
+                        asmfunc, 
+                        asmfunc_size - TWO_SYMBOLS_SKIP
+                    );
+
+            labels[labelspos].label_ip = outbuffer_offset / sizeof(ProcessorContainer) - FIX_INSTURCION_IP;
+
             labelspos++;
             continue;
         }
-
-        /*incrase now pos*/
-        ip++;
 
         /*instuction argument*/
         static char argument[MAX_ARGUMENT_SIZE] = {};
@@ -240,25 +253,38 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
         /*Calculate new outbuffer size*/
         if (outbuffer_offset + sizeof(ProcessorContainer) * INACCURACY >= outbuffer_size)
         {
-            void *new_data = recalloc(outbuffer, outbuffer_size * BUFFER_MULTIPLIER, sizeof(char), outbuffer_size, sizeof(char));
+            void *new_data = recalloc(
+                                        outbuffer, 
+                                        outbuffer_size * BUFFER_MULTIPLIER, 
+                                        sizeof(char), 
+                                        outbuffer_size, 
+                                        sizeof(char)
+                                    );
             assert(new_data != NULL);
             outbuffer_size *= BUFFER_MULTIPLIER;
-            outbuffer = (char *)new_data;
+            outbuffer = (char*)new_data;
         }
         #include "../GlobalHeaders/DSL.h"
         /*else*/ void(0);
     }
 
     size_t counter_verified_marks = 0;
+
     for (size_t udpos = 0; udpos < undeflabelspos; udpos++)
     {
         for (size_t dpos = 0; dpos < labelspos; dpos++)
         {
-            if (strcmp(undeflabels[udpos].UNDEF_LABEL_NAME, labels[dpos].LABEL_NAME) == 0)
+            if (strcmp(undeflabels[udpos].label_name, labels[dpos].label_name) == 0)
             {
                 counter_verified_marks++;
                 double argument = (float)labels[dpos].label_ip;
-                memcpy((void *)(outbuffer + undeflabels[udpos].UNDEF_BUFFER_POS), &argument, sizeof(ProcessorContainer));
+
+                memcpy(
+                        outbuffer + undeflabels[udpos].label_pos, 
+                        &argument, 
+                        sizeof(ProcessorContainer)
+                    );
+
                 break;
             }
         }
