@@ -38,8 +38,7 @@ int sscanf_s_fidex_n(const char* input, char* output, size_t* input_offset, size
     else                    return SCNAF_SUCCES ;
 }
 
-// функция аргумент
-void argument_determinant(  
+void argument_scaner(  
                             char*           outbuffer           , 
                             size_t*         outbuffer_offset    , 
                             int64_t         bytecode            , 
@@ -64,6 +63,7 @@ void argument_determinant(
 
         spucommand |= REG_BIT;
 
+        //Get rid of artifacts
         spucommand |= (((int64_t)((argument[1] - 'A'))) << REG_BITS) | REG_BIT;
 
         memcpy(
@@ -94,7 +94,6 @@ void argument_determinant(
 
     }  else /*if jmp text mark*/
     {
-        spucommand |= bytecode;
 
         memcpy(
                 outbuffer + (*outbuffer_offset),
@@ -135,15 +134,15 @@ void argument_determinant(
                                 &asmfunc_size                                                       \
                             );                                                                      \
             inbuffer_offset += inbuffer_additional_offset;                                          \
-            argument_determinant(                                                                   \
-                                    outbuffer,                                                      \
-                                    &outbuffer_offset,                                              \
-                                    num,                                                            \
-                                    argument,                                                       \
-                                    asmfunc_size,                                                   \
-                                    undeflabels,                                                    \
-                                    &undeflabelspos                                                 \
-                                );                                                                  \
+            argument_scaner(                                                                        \
+                                outbuffer,                                                          \
+                                &outbuffer_offset,                                                  \
+                                num,                                                                \
+                                argument,                                                           \
+                                asmfunc_size,                                                       \
+                                undeflabels,                                                        \
+                                &undeflabelspos                                                     \
+                        );                                                                          \
         }                                                                                           \
     }                                                                                               \
     else
@@ -230,9 +229,11 @@ void assembler(const char *FILE_NAME_INPUT, const char *FILE_NAME_OUTPUT)
             continue;
         }
 
-        /*processing text marks*/
+        
         printf("sze = %lu, command = %s\n", asmfunc_size, asmfunc);
         assert(asmfunc_size != 0);
+
+        /*processing text marks*/
         if (asmfunc[asmfunc_size - ONE_SYMBOL_SKIP] == ':' && asmfunc_size > 1)
         {
             strncpy(

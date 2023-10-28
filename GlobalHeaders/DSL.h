@@ -134,7 +134,7 @@ DEF_CMD(JGE, 68, ONE_ARGUMENT,
     {
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
-        if(first > second || fabs(first - second) < epsilan)
+        if(first > second || doubleEqual(first, second))
             pr.ip = calculateIP(&pr);
         else
             pr.ip += NEXT_INSTRUCTION;         
@@ -154,7 +154,7 @@ DEF_CMD(JLE, 70, ONE_ARGUMENT,
     {
         double first    = DO_POP(pr.stk);
         double second   = DO_POP(pr.stk);
-        if(DO_POP(pr.stk) < DO_POP(pr.stk) || fabs(first - second) < epsilan)
+        if(DO_POP(pr.stk) < DO_POP(pr.stk) || doubleEqual(first, second))
             pr.ip = calculateIP(&pr);
         else
             pr.ip += NEXT_INSTRUCTION;          
@@ -191,6 +191,8 @@ DEF_CMD(OUTALL, 74, NON_ARGUMENT,
                         pr.MEM + (i * memside + j) * sizeof(ProcessorArgumentType), 
                         sizeof(ProcessorArgumentType)
                 );
+                if((int)outnum == 0)
+                    outnum = (ProcessorArgumentType)('.');
                 printf("%c", (int)outnum);
             }
             putchar('\n');
@@ -201,6 +203,5 @@ DEF_CMD(OUTALL, 74, NON_ARGUMENT,
 //JG JL JLE JGE для них первый элемент - верхний
 // Stack - ret register
 
-#undef DEF_CMD
 #undef ONE_ARGUMENT
 #undef NON_ARGUMENT

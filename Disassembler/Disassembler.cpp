@@ -1,6 +1,6 @@
 #include "Disassembler.h"
 
-char* creacte_reg(long offset){
+char* creacteReg(long offset){
     static char reg[] = "R&X";
     reg[1] = (char)('A' + offset);
     return reg;
@@ -8,29 +8,28 @@ char* creacte_reg(long offset){
 
 #define DEF_CMD(name, num, args, ...)                                                                   \
     case num:{                                                                                          \
-        if(args == 0){                                                                                  \
-            fprintf(outputfile,"%s\n", #name);                                                          \
-        }                                                                                               \
-        else if(args == 1){                                                                             \
             fprintf(outputfile, "%s ", #name);                                                          \
+            if(args == 0)                                                                               \
+                void(0);                                                                                \
+            else if(args == 1){                                                                         \
             if(command & MEM_BIT){                                                                      \
                 fprintf(outputfile, "%c", '[');                                                         \
             }                                                                                           \
             if(command & REG_BIT){                                                                      \
-                fprintf(outputfile, "%s", creacte_reg((command >> REG_BITS)));                          \
+                fprintf(outputfile, "%s", creacteReg((command >> REG_BITS)));                           \
             }                                                                                           \
             else {                                                                                      \
-                ProcessorArgumentType dubarg = 0;                                                       \
-                fread(&dubarg, sizeof(ProcessorArgumentType), 1, inputfile);                            \
-                fprintf(outputfile,"%lg", dubarg);                                                      \
-            }                                                                                           \                                                                                   
+                ProcessorArgumentType value = 0;                                                        \
+                fread(&value, sizeof(ProcessorArgumentType), 1, inputfile);                             \
+                fprintf(outputfile,"%" ElementSpecificator, value);                                     \
+            }                                                                                           \
             if(command & MEM_BIT){                                                                      \
                 fprintf(outputfile, "%c", ']');                                                         \
             }                                                                                           \
-            fprintf(outputfile, "\n");                                                                  \
         }                                                                                               \
+        fprintf(outputfile, "\n");                                                                      \
     }                                                                                                   \
-    break;                                                                                              \
+    break;
 
 void disassembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT){
         assert(FILE_NAME_INPUT  != NULL);

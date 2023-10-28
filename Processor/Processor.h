@@ -21,6 +21,13 @@
 
 #define print_error(error) printf("ERROR: %s!\n", #error);
 
+static uint64_t                 PROC_POISON_HEX_NUM = 0xDEADBABE;
+static ProcessorArgumentType    PROC_POISON_NUM     = *((ProcessorArgumentType*)&PROC_POISON_HEX_NUM);
+static const size_t             PROC_CODE_MULT      = 2;
+
+static const int BAD_FILE_OWNERSHIP = 0;
+static const int BAD_FILE_VERSRSHIP = 0;
+
 struct ProcStruct
 {
     Stack *stk          ;
@@ -63,5 +70,7 @@ size_t calculateIP(const ProcStruct *pr);
 void ProcessortOutAllErrors(ProcessorError  errors);
 
 void processor(const char* FILE_NAME);
+
+bool doubleEqual(const double& a, const double& b, const double eps = epsilan);
 
 #endif // !CALC_PROCESSOR_H

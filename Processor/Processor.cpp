@@ -1,30 +1,75 @@
 #include "Processor.h"
 
-static inline ProcessorArgumentType DO_POP  (Stack* stk                             );
-static inline void                  DO_PUSH (Stack* stk, ProcessorArgumentType value);
+bool doubleEqual(const double& a, const double& b, const double eps){
+    return fabs(a - b) < eps;
+}
 
-static inline void      DO_ADD      (Stack* stk);
-static inline void      DO_DIV      (Stack* stk);
-static inline void      DO_SUB      (Stack* stk);
-static inline void      DO_MUL      (Stack* stk);
-static inline void      DO_SIN      (Stack* stk);
-static inline void      DO_COS      (Stack* stk);
-static inline void      DO_SQRT     (Stack* stk);
-static inline void      DO_OUT      (Stack* stk);
-static inline void      DO_IN       (Stack* stk);
+static inline void DO_PUSH(Stack* stk, ProcessorArgumentType value){
+    StackErrorsBitmask  stackerror = STACK_ALL_OK;
+    StackPush(stk, value, &stackerror);
+    assert(stackerror == STACK_ALL_OK);
+}
+static inline ProcessorArgumentType DO_POP(Stack* stk){
+    StackErrorsBitmask  stackerror = STACK_ALL_OK;
+    ProcessorArgumentType outnum = StackPop(stk, &stackerror);
+    assert(stackerror == STACK_ALL_OK);
+    return outnum;
+}
+static inline void DO_OUT(Stack* stk){
+    ProcessorArgumentType value  = DO_POP(stk);
+    DO_PUSH(stk, value);
+    printf("Your value : %" ElementSpecificator "\n", value);
+
+}
+static inline void DO_IN(Stack* stk){
+    ProcessorArgumentType value = {};
+    printf("Enter value:\n");
+    assert(scanf("%" ElementSpecificator, &value) == 1);
+    DO_PUSH(stk, value);
+}
+
+#define BINARY_ARITHMETIC_OPERATION(name, OP)               \
+    static inline void DO_##name(Stack* stk){               \
+        ProcessorArgumentType second_value = DO_POP(stk);   \
+        ProcessorArgumentType first_value  = DO_POP(stk);   \
+        DO_PUSH(stk, first_value OP second_value);          \
+    }
+
+BINARY_ARITHMETIC_OPERATION(ADD, +);
+BINARY_ARITHMETIC_OPERATION(SUB, -);
+BINARY_ARITHMETIC_OPERATION(DIV, /);
+BINARY_ARITHMETIC_OPERATION(MUL, *);
+
+#undef BINARY_ARITHMETIC_OPERATION
+
+#define UNARY_ARITHMETIC_FUNCTION(name, func)   \
+    static inline void DO_##name(Stack* stk){   \
+        DO_PUSH(stk, func(DO_POP(stk)));        \
+    }
+
+UNARY_ARITHMETIC_FUNCTION(SIN,  sin);
+UNARY_ARITHMETIC_FUNCTION(COS,  cos);
+UNARY_ARITHMETIC_FUNCTION(SQRT, sqrt);
+UNARY_ARITHMETIC_FUNCTION(LOG, log);
+
+#undef UNARY_ARITHMETIC_FUNCTION
 
 size_t calculateIP(const ProcStruct *pr){
+
     assert(pr != NULL);
+
     double calculatedIP = {};
+
     memcpy(
             &calculatedIP                                       , 
             pr->code + pr->ip * sizeof(ProcessorArgumentType)   , 
             sizeof(ProcessorArgumentType)
         );
+    
     return (size_t)calculatedIP;
 }
 
-ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode){
+ProcessorArgumentType argumentRead(ProcStruct *pr, const ProcessorContainer nowcode){
 
     assert(pr != NULL);
 
@@ -37,14 +82,22 @@ ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode){
             assert(R_STATUS < NUMBER_OF_REGISTERS);
 
             size_t offset = (size_t)pr->reg[R_STATUS] * sizeof(ProcessorArgumentType);
-            memcpy(&pushednum, pr->MEM + offset, sizeof(ProcessorArgumentType));
+            memcpy(
+                    &pushednum, 
+                    pr->MEM + offset, 
+                    sizeof(ProcessorArgumentType)
+                );
 
         }
         else if(nowcode & NUM_BIT){
 
             size_t offset = calculateIP(pr) * sizeof(ProcessorArgumentType);
 
-            memcpy(&pushednum, pr->MEM +  offset, sizeof(ProcessorArgumentType));
+            memcpy(
+                    &pushednum, 
+                    pr->MEM +  offset, 
+                    sizeof(ProcessorArgumentType)
+                );
             pr->ip++;
         }
     }
@@ -58,7 +111,11 @@ ProcessorArgumentType argumentRead(ProcStruct *pr, ProcessorContainer nowcode){
     else if(nowcode & NUM_BIT){
 
         size_t offset = pr->ip * sizeof(ProcessorArgumentType);
-        memcpy(&pushednum, pr->code + offset, sizeof(ProcessorArgumentType));
+        memcpy(
+                &pushednum, 
+                pr->code + offset, 
+                sizeof(ProcessorArgumentType)
+            );
         
         pr->ip++;
     }
@@ -71,7 +128,11 @@ ProcStruct ProcessorCtor (const char* FILE_NAME){
 
     ProcStruct outproc = {};
 
-    memset(&outproc.reg, 0, NUMBER_OF_REGISTERS * sizeof(ProcessorArgumentType));
+    memset(
+            &outproc.reg, 
+            0, 
+            NUMBER_OF_REGISTERS * sizeof(ProcessorArgumentType)
+        );
 
     outproc.ip          = IP_START_POS      ;
     outproc.code_size   = CODE_START_SIZE   ;
@@ -92,6 +153,7 @@ ProcStruct ProcessorCtor (const char* FILE_NAME){
 }
 
 void ProcessorDtor(ProcStruct procs){
+
     assert(procs.code != NULL);
 
     free(procs.code - sizeof(AUTHORS_NAME) - sizeof(VERSION));
@@ -108,6 +170,7 @@ void ProcessorDtor(ProcStruct procs){
 }
 
 void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
+
     assert(procs        != NULL);
     assert(FILE_NAME    != NULL);
 
@@ -122,29 +185,29 @@ void ProcessorGetCode(ProcStruct* procs, const char* FILE_NAME){
     assert(fread(procs->code, file_size, sizeof(ProcessorContainer), fp) == FREAD_SUCCES);
 
     int file_ownership = strncmp(procs->code, AUTHORS_NAME, sizeof(AUTHORS_NAME));
-    if(file_ownership != 0){
+    if(file_ownership != BAD_FILE_OWNERSHIP){
         printf("Incorrect author PROGRAM_ATH:%s FILE_ATH%s!\n", AUTHORS_NAME, procs->code);
-        assert(file_ownership == 0);
+        assert(file_ownership == BAD_FILE_OWNERSHIP);
     }
     procs->code += sizeof(AUTHORS_NAME);
 
     int file_versionship = strncmp(procs->code, VERSION, sizeof(VERSION));
-    if(file_versionship != 0){
+    if(file_versionship != BAD_FILE_VERSRSHIP){
         printf("Incorrect version PROGRAM_VER:%s FILE_VER:%s\n", VERSION, procs->code);
-        assert(file_versionship == 0);
+        assert(file_versionship == BAD_FILE_VERSRSHIP);
     }
     procs->code += sizeof(VERSION);
 
     fclose(fp);
 }
 
-ProcessorError ProcessorVerificator(ProcStruct procs){
-
-    ProcessorError outerror = PROC_ALL_OK;
+ProcessorError ProcessorVerificator(const ProcStruct procs){
 
     assert(procs.code != NULL           );
     assert(procs.stk  != NULL           );
     assert(procs.ip   < procs.code_size );
+
+    ProcessorError outerror = PROC_ALL_OK;
 
     if(procs.code == NULL           ) outerror |= PROC_CODE_ERROR   ;
     if(procs.stk  == NULL           ) outerror |= PROC_STACK_ERROR  ;
@@ -153,7 +216,7 @@ ProcessorError ProcessorVerificator(ProcStruct procs){
     return outerror;
 }
 
-void ProcessortOutAllErrors(ProcessorError  errors){
+void ProcessortOutAllErrors(const ProcessorError  errors){
     if(errors & PROC_CODE_ERROR     ) print_error(PROC_CODE_ERROR     );
     if(errors & PROC_STACK_ERROR    ) print_error(PROC_STACK_ERROR    );
     if(errors & PROC_IP_POS_ERROR   ) print_error(PROC_IP_POS_ERROR   );
@@ -179,7 +242,7 @@ void ProcessorDump(
 
     printf("\t{\n");
     for(size_t i = 0; i < NUMBER_OF_REGISTERS; i++)
-        printf("\t\tr%cx = %lf \n", (int)('a' + i), procs.reg[i]);
+        printf("\t\tr%cx = %" ElementSpecificator " \n", (int)('a' + i), procs.reg[i]);
     printf("\t}\n");
 
     if(procs.code_size <= procs.ip)
@@ -262,6 +325,7 @@ void ProcessorDump(
 }
 
 void processor(const char* FILE_NAME){
+    
     assert(FILE_NAME != NULL);
 
     ProcStruct pr = ProcessorCtor(FILE_NAME);
@@ -271,7 +335,11 @@ void processor(const char* FILE_NAME){
     while(pr.ip < IP_MAX){
 
         ProcessorContainer nowcode = {};
-        memcpy(&nowcode, pr.code + pr.ip * sizeof(ProcessorContainer), sizeof(ProcessorContainer));
+        memcpy(
+                &nowcode, 
+                pr.code + pr.ip * sizeof(ProcessorContainer), 
+                sizeof(ProcessorContainer)
+            );
 
         pr.ip++;
         printf("NOW INST: %ld \n", nowcode & MASK_CODE);
@@ -296,68 +364,4 @@ void processor(const char* FILE_NAME){
     //PROCESSOR_DUMP(pr, PROC_ALL_OK);
 
     ProcessorDtor(pr);
-}
-
-static inline void DO_PUSH(Stack* stk, ProcessorArgumentType value){
-    StackErrorsBitmask  stackerror = STACK_ALL_OK;
-    StackPush(stk, value, &stackerror);
-    assert(stackerror == STACK_ALL_OK);
-}
-
-static inline ProcessorArgumentType DO_POP(Stack* stk){
-    StackErrorsBitmask  stackerror = STACK_ALL_OK;
-    ProcessorArgumentType outnum = StackPop(stk, &stackerror);
-    assert(stackerror == STACK_ALL_OK);
-    return outnum;
-}
-
-#warning for simple ops, move this block to cmd define
-static inline void DO_ADD(Stack* stk){
-    ProcessorArgumentType first_value  = DO_POP(stk);
-    ProcessorArgumentType second_value = DO_POP(stk);
-    DO_PUSH(stk, first_value + second_value);
-}
-
-static inline void DO_DIV(Stack* stk){
-    ProcessorArgumentType first_value  = DO_POP(stk);
-    ProcessorArgumentType second_value = DO_POP(stk);
-    DO_PUSH(stk, second_value / first_value);
-}
-
-static inline void DO_SUB(Stack* stk){
-    ProcessorArgumentType first_value  = DO_POP(stk);
-    ProcessorArgumentType second_value = DO_POP(stk);
-    DO_PUSH(stk, second_value - first_value);
-}
-
-static inline void DO_MUL(Stack* stk){
-    ProcessorArgumentType first_value  = DO_POP(stk);
-    ProcessorArgumentType second_value = DO_POP(stk);
-    DO_PUSH(stk, second_value * first_value);
-}
-
-static inline void DO_SIN(Stack* stk){
-    DO_PUSH(stk, sin(DO_POP(stk)));
-}
-
-static inline void DO_COS(Stack* stk){
-    DO_PUSH(stk, cos(DO_POP(stk)));
-}
-
-static inline void DO_SQRT(Stack* stk){
-    DO_PUSH(stk, sqrt(DO_POP(stk)));
-}
-
-static inline void DO_OUT(Stack* stk){
-    ProcessorArgumentType value  = DO_POP(stk);
-    DO_PUSH(stk, value);
-    printf("Your value : %" ElementSpecificator "\n", value);
-
-}
-
-static inline void DO_IN(Stack* stk){
-    ProcessorArgumentType value = {};
-    printf("Enter value:\n");
-    assert(scanf("%" ElementSpecificator, &value) == 1);
-    DO_PUSH(stk, value);
 }

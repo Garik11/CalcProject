@@ -13,14 +13,18 @@
 #include "../Processor/Stack/src/recalloc/recalloc.h"
 #include "../FileWork/TextReadFile.h"
 
+/*Max text label size*/
 static const size_t MAX_MARK_TEXT_SIZE = 100;
 
+/*Declared text labels*/
 struct Lashes
 {
     char label_name[MAX_MARK_TEXT_SIZE];
     size_t label_ip;
 };
 
+/*Undeclared text labels
+Made to avoid a double pass through the code*/
 struct UndefLashes
 {
     char label_name[MAX_MARK_TEXT_SIZE];
@@ -49,11 +53,14 @@ static const size_t MAX_LABEL_NUMBER = 1000;
 /*the extra byte for the last character*/
 static const size_t EXTRA_BYTE = 1;
 
+/*assemble text to eq file*/
 void assembler(const char* FILE_NAME_INPUT, const char* FILE_NAME_OUTPUT);
 
+/*to toupper all alp chars*/
 void toupper_all(char *str);
 
-void argument_determinant(  
+/*scan an argument and сonverting an argument to code*/
+void argument_scaner(  
                             char*           outbuffer           , 
                             size_t*         outbuffer_offset    , 
                             int64_t         bytecode            , 
@@ -63,6 +70,7 @@ void argument_determinant(
                             size_t*         undeflabelspos
                         );
 
+/*scanf with saving pos and with saving the size of the read line*/
 int sscanf_s_fidex_n(
                         const char*     input       , 
                         char*           output      , 
